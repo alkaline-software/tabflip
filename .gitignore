@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Rust
+target/
+/dist

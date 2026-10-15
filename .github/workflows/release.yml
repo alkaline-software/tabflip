@@ -1,0 +1,85 @@
+name: release
+
+# Disk images, built when a version tag is pushed (`git tag v0.1.0 && git
+# push --tags`), attached to a draft GitHub Release under stable names with
+# the tag's section of CHANGELOG.md as its notes. These are ad-hoc signed;
+# the Developer ID holder puts notarized ones over them and publishes the
+# draft (scripts/release-publish.sh, WORKFLOW.md).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            asset: tabflip-mac-arm64.dmg
+          - target: x86_64-apple-darwin
+            asset: tabflip-mac-x64.dmg
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: The tag matches the workspace version and has release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          v=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          if [ "v$v" != "${GITHUB_REF_NAME}" ]; then
+            echo "Cargo.toml says $v but the tag is ${GITHUB_REF_NAME}"; exit 1
+          fi
+          scripts/release-notes.sh "$v" >/dev/null
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ matrix.target }}
+
+      - name: cargo-packager
+        run: cargo install cargo-packager --locked
+
+      - name: Build
+        run: cargo build --release --locked -p tabflip-app --target ${{ matrix.target }}
+
+      - name: Package
+        run: scripts/release-mac.sh --target ${{ matrix.target }} --no-build --identity - --out upload/${{ matrix.asset }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.asset }}
+          path: upload/*
+
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: upload
+          merge-multiple: true
+
+      - name: Release notes from CHANGELOG.md
+        run: scripts/release-notes.sh "${GITHUB_REF_NAME#v}" > notes.md
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: tabflip ${{ github.ref_name }}
+          body_path: notes.md
+          files: upload/*
+          # A draft until the notarized images are put over these.
+          draft: true

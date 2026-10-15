@@ -1,0 +1,29 @@
+name: rust
+
+# The core's tests and an app build on every push and pull request.
+# tabflip is a Mac's alone, so macOS is the one runner.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["*.md"]
+  pull_request:
+    paths-ignore: ["*.md"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  rust:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Tests
+        run: cargo test -p tabflip-core --locked
+        env:
+          TABFLIP_HOME: ${{ runner.temp }}/tabflip-home
+      - name: Build the app
+        run: cargo build -p tabflip-app --locked
