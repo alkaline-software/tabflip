@@ -29,6 +29,10 @@ pub struct Controller {
     switcher: Switcher,
     windows: Vec<Win>,
     pub rows: Vec<Row>,
+    /// The windows as last looked at, shown at once while a fresh look is
+    /// taken, and whether one is being taken outside a round.
+    known: Vec<Win>,
+    refreshing: bool,
     recent: Recent,
     icons: HashMap<i32, Option<Arc<Image>>>,
     panel: Option<WindowHandle<Panel>>,
@@ -59,6 +63,8 @@ impl Controller {
             switcher: Switcher::default(),
             windows: Vec::new(),
             rows: Vec::new(),
+            known: Vec::new(),
+            refreshing: false,
             recent: Recent::default(),
             icons: HashMap::new(),
             panel: None,
@@ -83,9 +89,14 @@ impl Controller {
         if self.listening || !sys::ax::trusted() {
             return;
         }
-        let Some(mut keys) = sys::tap::start() else { return };
+        let Some(mut keys) = sys::tap::start() else {
+            sys::log(format_args!("listen: the key tap was refused"));
+            return;
+        };
+        sys::log(format_args!("listen: key tap on"));
         self.listening = true;
         self.apply_shortcut();
+        self.refresh(cx);
         cx.notify();
         cx.spawn(async move |this, cx| {
             use futures::StreamExt as _;
@@ -107,6 +118,7 @@ impl Controller {
     }
 
     fn key(&mut self, key: Key, cx: &mut Context<Self>) {
+        sys::log(format_args!("key {key:?}"));
         let effect = match key {
             Key::Trigger { back } => self.switcher.trigger(back),
             Key::Step(by) => self.switcher.step(by),
@@ -131,6 +143,9 @@ impl Controller {
     }
 
     fn effect(&mut self, effect: Option<Effect>, cx: &mut Context<Self>) {
+        if let Some(e) = effect {
+            sys::log(format_args!("effect {e:?} ({} rows)", self.rows.len()));
+        }
         match effect {
             None => {}
             Some(Effect::Begin(round)) => self.begin(round, cx),
@@ -150,21 +165,26 @@ impl Controller {
     }
 
     /// A round begins: the window in front is remembered as the latest
-    /// used, the windows are listed off the main thread, and the delay
-    /// before the list shows starts.
+    /// used, and the delay before the list shows starts. The windows last
+    /// looked at are listed at once, those still on screen or put away,
+    /// and a fresh look is taken off the main thread to replace them: an
+    /// app slow to answer never keeps the list from showing.
     fn begin(&mut self, round: u64, cx: &mut Context<Self>) {
         if let Some(id) = sys::windows::focused() {
             self.recent.touch(id);
         }
-        let apps = sys::windows::apps();
-        let listing = cx.background_spawn(async move {
+        if !self.known.is_empty() {
             let stack = sys::windows::on_screen();
-            let windows = sys::windows::list(&apps, &stack);
-            (windows, stack)
-        });
+            let known = self.known.iter().filter(|w| w.minimized || w.app_hidden || w.id.is_some_and(|n| stack.contains(&n))).cloned().collect();
+            self.listed(round, known, &stack, cx);
+        }
+        let listing = Self::look(cx);
         cx.spawn(async move |this, cx| {
             let (windows, stack) = listing.await;
-            let _ = this.update(cx, |c, cx| c.listed(round, windows, &stack, cx));
+            let _ = this.update(cx, |c, cx| {
+                c.known = windows.clone();
+                c.listed(round, windows, &stack, cx);
+            });
         })
         .detach();
         let delay = Duration::from_millis(self.config.appear_delay_ms());
@@ -178,10 +198,41 @@ impl Controller {
         .detach();
     }
 
-    fn listed(&mut self, round: u64, windows: Vec<Win>, stack: &[u32], cx: &mut Context<Self>) {
-        if round != self.switcher.round() {
+    /// The windows and the on-screen stack, read off the main thread.
+    fn look(cx: &mut Context<Self>) -> Task<(Vec<Win>, Vec<u32>)> {
+        let apps = sys::windows::apps();
+        cx.background_spawn(async move {
+            let started = std::time::Instant::now();
+            let stack = sys::windows::on_screen();
+            let windows = sys::windows::list(&apps, &stack);
+            sys::log(format_args!("looked: {} apps, {} on screen, {} windows in {:?}", apps.len(), stack.len(), windows.len(), started.elapsed()));
+            (windows, stack)
+        })
+    }
+
+    /// A fresh look outside a round, for the next one to show at once.
+    fn refresh(&mut self, cx: &mut Context<Self>) {
+        if self.refreshing || !self.listening {
             return;
         }
+        self.refreshing = true;
+        let listing = Self::look(cx);
+        cx.spawn(async move |this, cx| {
+            let (windows, _) = listing.await;
+            let _ = this.update(cx, |c, _| {
+                c.refreshing = false;
+                c.known = windows;
+            });
+        })
+        .detach();
+    }
+
+    fn listed(&mut self, round: u64, windows: Vec<Win>, stack: &[u32], cx: &mut Context<Self>) {
+        if round != self.switcher.round() || !self.switcher.is_active() {
+            return;
+        }
+        // The window selected in the list being replaced stays selected.
+        let was = self.switcher.selected().and_then(|i| self.windows.get(i)).and_then(|w| w.id);
         let ix = order::order(&windows, |w| w.id, stack, &self.recent);
         let mut ordered: Vec<Win> = ix.into_iter().map(|i| windows[i].clone()).collect();
         // A window an app lists twice is one row.
@@ -194,9 +245,13 @@ impl Controller {
             .zip(labels)
             .map(|(w, label)| Row { label: label.into(), app: w.app_name.clone().into(), icon: self.icon(w.pid) })
             .collect();
+        let now = was.and_then(|id| ordered.iter().position(|w| w.id == Some(id)));
         self.windows = ordered;
         self.rows = rows;
         let e = self.switcher.listed(round, self.windows.len());
+        if let Some(i) = now {
+            self.switcher.keep(i);
+        }
         self.effect(e, cx);
     }
 
@@ -225,11 +280,13 @@ impl Controller {
         }
     }
 
-    /// Note which window is in front, each time another app comes forward.
-    pub fn app_activated(&mut self) {
+    /// Note which window is in front, each time another app comes
+    /// forward, and look at the windows again for the next round.
+    pub fn app_activated(&mut self, cx: &mut Context<Self>) {
         if let Some(id) = sys::windows::focused() {
             self.recent.touch(id);
         }
+        self.refresh(cx);
     }
 
     /// `TABFLIP_SHOT`: the list as it shows for a few windows, with no
@@ -261,6 +318,11 @@ impl Controller {
         self.switcher.trigger(false);
         self.switcher.listed(round, self.rows.len());
         let e = self.switcher.delay_passed(round);
+        self.effect(e, cx);
+    }
+
+    pub fn demo_close(&mut self, cx: &mut Context<Self>) {
+        let e = self.switcher.cancel();
         self.effect(e, cx);
     }
 

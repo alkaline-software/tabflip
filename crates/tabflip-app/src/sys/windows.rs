@@ -51,32 +51,38 @@ pub fn apps() -> Vec<App> {
 }
 
 /// Every window of `apps` worth switching to, in the order the apps
-/// list them. Slow apps are given a quarter of a second each, so this
-/// runs off the main thread.
+/// list them. Each app is asked on a thread of its own, so the whole takes
+/// as long as the slowest app, and no app longer than the quarter-second
+/// limit per question. Off the main thread.
 pub fn list(apps: &[App], on_screen: &[u32]) -> Vec<Window> {
+    std::thread::scope(|scope| {
+        let asked: Vec<_> = apps.iter().map(|app| scope.spawn(move || app_windows(app, on_screen))).collect();
+        asked.into_iter().flat_map(|t| t.join().unwrap_or_default()).collect()
+    })
+}
+
+fn app_windows(app: &App, on_screen: &[u32]) -> Vec<Window> {
     let mut out = Vec::new();
-    for app in apps {
-        let Some(el) = Element::app(app.pid) else { continue };
-        for w in el.elements("AXWindows") {
-            if w.string("AXRole").as_deref() != Some("AXWindow") {
-                continue;
-            }
-            let subrole = w.string("AXSubrole").unwrap_or_default();
-            let title = w.string("AXTitle").unwrap_or_default();
-            // Documents and their dialogs; not palettes, sheets or popovers.
-            let kept = subrole == "AXStandardWindow" || (subrole == "AXDialog" && !title.is_empty());
-            if !kept {
-                continue;
-            }
-            let minimized = w.bool("AXMinimized").unwrap_or(false);
-            let id = w.window_id();
-            // A window neither on screen nor put away is on another Space.
-            let here = id.is_some_and(|n| on_screen.contains(&n));
-            if !(here || minimized || app.hidden) {
-                continue;
-            }
-            out.push(Window { pid: app.pid, id, title, app_name: app.name.clone(), bundle_id: app.bundle_id.clone(), minimized, app_hidden: app.hidden, element: w });
+    let Some(el) = Element::app(app.pid) else { return out };
+    for w in el.elements("AXWindows") {
+        if w.string("AXRole").as_deref() != Some("AXWindow") {
+            continue;
         }
+        let subrole = w.string("AXSubrole").unwrap_or_default();
+        let title = w.string("AXTitle").unwrap_or_default();
+        // Documents and their dialogs; not palettes, sheets or popovers.
+        let kept = subrole == "AXStandardWindow" || (subrole == "AXDialog" && !title.is_empty());
+        if !kept {
+            continue;
+        }
+        let minimized = w.bool("AXMinimized").unwrap_or(false);
+        let id = w.window_id();
+        // A window neither on screen nor put away is on another Space.
+        let here = id.is_some_and(|n| on_screen.contains(&n));
+        if !(here || minimized || app.hidden) {
+            continue;
+        }
+        out.push(Window { pid: app.pid, id, title, app_name: app.name.clone(), bundle_id: app.bundle_id.clone(), minimized, app_hidden: app.hidden, element: w });
     }
     out
 }

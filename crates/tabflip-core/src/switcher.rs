@@ -96,7 +96,9 @@ impl Switcher {
         self.finish()
     }
 
-    /// The round's windows are in.
+    /// The round's windows are in. They may come twice: first the ones
+    /// remembered from before, at once, then a fresh look, which replaces
+    /// them.
     pub fn listed(&mut self, round: u64, len: usize) -> Option<Effect> {
         if !self.active || round != self.round {
             return None;
@@ -105,7 +107,18 @@ impl Switcher {
         if self.released {
             return self.finish();
         }
+        if self.shown {
+            return Some(Effect::Redraw);
+        }
         self.show_if_ready()
+    }
+
+    /// Select row `i` with no effect of its own: the same window, where a
+    /// fresh list put it.
+    pub fn keep(&mut self, i: usize) {
+        if self.active {
+            self.steps = i as i64;
+        }
     }
 
     /// The round's appear delay has passed.
@@ -239,6 +252,20 @@ mod tests {
         assert_eq!(s.listed(1, 3), None);
         assert_eq!(s.listed(2, 3), None);
         assert_eq!(s.delay_passed(2), Some(Show));
+    }
+
+    #[test]
+    fn a_fresh_list_replaces_the_remembered_one() {
+        let mut s = Switcher::default();
+        s.trigger(false);
+        assert_eq!(s.listed(1, 3), None);
+        assert_eq!(s.delay_passed(1), Some(Show));
+        s.trigger(false);
+        assert_eq!(s.listed(1, 4), Some(Redraw));
+        s.keep(3);
+        assert_eq!(s.selected(), Some(3));
+        assert_eq!(s.release(), Some(Focus(3)));
+        assert_eq!(s.listed(1, 5), None);
     }
 
     #[test]

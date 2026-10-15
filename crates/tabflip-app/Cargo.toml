@@ -12,6 +12,7 @@ path = "src/main.rs"
 [dependencies]
 tabflip-core = { path = "../tabflip-core" }
 anyhow.workspace = true
+dirs.workspace = true
 futures = "0.3"
 # The zed revision is pinned in Cargo.lock (cargo update -p gpui --precise <rev>).
 # gpui-component depends on the unpinned zed

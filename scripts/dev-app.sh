@@ -32,7 +32,7 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>tabflip</string>
+  <key>CFBundleName</key><string>tabflip dev</string>
   <key>CFBundleDisplayName</key><string>tabflip (dev)</string>
   <key>CFBundleIdentifier</key><string>com.alkalinesoftware.tabflip.dev</string>
   <key>CFBundleVersion</key><string>0</string>
@@ -62,7 +62,9 @@ else
   echo "dev-app: scripts/make-dev-cert.sh makes one that lasts." >&2
 fi
 
-# The running dev copy quits (SIGTERM puts the system's ⌘Tab back) and
-# this one opens.
-pkill -TERM -f "dev.noindex/tabflip.app/Contents/MacOS/tabflip" 2>/dev/null && sleep 0.5 || true
+# Any running copy quits, the dev one and an installed one, since two
+# would both take the shortcut (SIGTERM puts the system's ⌘Tab back), and
+# this one opens. Its log is ~/Library/Logs/tabflip-dev.log.
+pkill -TERM -f "tabflip.app/Contents/MacOS/tabflip" 2>/dev/null && sleep 0.5 || true
 open "$app"
+echo "dev-app: opened $app; in Accessibility it is \"tabflip dev\"" >&2

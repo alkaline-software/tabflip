@@ -17,6 +17,8 @@ fn main() {
     // that crashed or was killed with it off leaves it off.
     sys::private::set_system_switcher(true);
     restore_on_exit();
+    sys::ax::limit_waits();
+    sys::log(format_args!("start: {}, Accessibility {}", std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default(), sys::ax::trusted()));
 
     if std::env::args().any(|a| a == "--list") {
         list();
@@ -54,7 +56,7 @@ fn main() {
         cx.spawn(async move |cx| {
             use futures::StreamExt as _;
             while activations.next().await.is_some() {
-                c.update(cx, |c, _| c.app_activated());
+                c.update(cx, |c, cx| c.app_activated(cx));
             }
         })
         .detach();
@@ -67,6 +69,27 @@ fn main() {
                     settings::shoot(&std::path::PathBuf::from(path), cx);
                     cx.quit();
                 });
+            })
+            .detach();
+            return;
+        }
+        if let Some(dir) = std::env::var_os("TABFLIP_DEMO_LOOP") {
+            let dir = std::path::PathBuf::from(dir);
+            cx.spawn(async move |cx| {
+                for n in 0..4 {
+                    cx.background_executor().timer(std::time::Duration::from_secs(3)).await;
+                    sys::log(format_args!("demo {n}: show"));
+                    cx.update(|cx| controller.update(cx, |c, cx| c.demo(cx)));
+                    cx.background_executor().timer(std::time::Duration::from_millis(600)).await;
+                    let path = dir.join(format!("demo{n}.png"));
+                    cx.update(|cx| {
+                        if let Some(panel) = controller.read(cx).panel() {
+                            let _ = panel.update(cx, |_, window, _| sys::log(format_args!("demo {n}: shot {:?}", sys::shoot_window(window, &path))));
+                        }
+                        controller.update(cx, |c, cx| c.demo_close(cx));
+                    });
+                }
+                cx.update(|cx| cx.quit());
             })
             .detach();
             return;

@@ -84,6 +84,11 @@ impl Panel {
         self.leaving = None;
         self.last_selected = None;
         crate::sys::show_panel(window, (WIDTH + 2. * MARGIN) as f64, height as f64);
+        // gpui hears of a resize through an update of this window, which
+        // is the one being updated now, so it would never hear of it: the
+        // list would be drawn at the size it was opened with, one row.
+        window.bounds_changed(cx);
+        crate::sys::log(format_args!("panel shown, {rows} rows, {height} high"));
         cx.notify();
     }
 

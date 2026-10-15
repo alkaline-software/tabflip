@@ -18,6 +18,7 @@ extern "C" {
     fn AXIsProcessTrustedWithOptions(options: Ref) -> bool;
     static kAXTrustedCheckOptionPrompt: Ref;
     fn AXUIElementCreateApplication(pid: i32) -> Ref;
+    fn AXUIElementCreateSystemWide() -> Ref;
     fn AXUIElementCopyAttributeValue(element: Ref, attribute: Ref, value: *mut Ref) -> i32;
     fn AXUIElementSetAttributeValue(element: Ref, attribute: Ref, value: Ref) -> i32;
     fn AXUIElementPerformAction(element: Ref, action: Ref) -> i32;
@@ -57,6 +58,22 @@ pub fn ask_trust() -> bool {
         ok
     }
 }
+
+/// How long any question to any app may take, a quarter of a second, set
+/// once for the process. A timeout set on an app's element covers that
+/// element alone; its windows would wait the system's default of six
+/// seconds on an app that hangs.
+pub fn limit_waits() {
+    unsafe {
+        let all = AXUIElementCreateSystemWide();
+        if !all.is_null() {
+            AXUIElementSetMessagingTimeout(all, TIMEOUT);
+            CFRelease(all);
+        }
+    }
+}
+
+const TIMEOUT: f32 = 0.25;
 
 /// An owned reference to an Accessibility element: an app or one of its
 /// windows. CF objects may be used from any thread.
@@ -103,7 +120,7 @@ impl Element {
         if r.is_null() {
             return None;
         }
-        unsafe { AXUIElementSetMessagingTimeout(r, 0.25) };
+        unsafe { AXUIElementSetMessagingTimeout(r, TIMEOUT) };
         Some(Element(r))
     }
 

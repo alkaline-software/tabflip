@@ -10,6 +10,20 @@ pub mod windows;
 use objc2::MainThreadMarker;
 use objc2_app_kit::{NSView, NSWindow};
 
+/// A line in `~/Library/Logs/tabflip-dev.log`, in debug builds only: what
+/// the switcher did and how long it took, for a dev build being tried.
+pub fn log(line: std::fmt::Arguments) {
+    if cfg!(debug_assertions) {
+        use std::io::Write as _;
+        let Some(dir) = dirs::home_dir() else { return };
+        let path = dir.join("Library/Logs/tabflip-dev.log");
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
+            let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
+            let _ = writeln!(f, "{}.{:03} {line}", t.as_secs() % 100_000, t.subsec_millis());
+        }
+    }
+}
+
 /// The settings page in System Settings where Accessibility is granted.
 pub const ACCESSIBILITY_SETTINGS_URL: &str = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 
@@ -58,7 +72,10 @@ pub fn activations() -> futures::channel::mpsc::UnboundedReceiver<()> {
 pub fn show_panel(window: &gpui::Window, width: f64, height: f64) {
     use objc2_app_kit::{NSEvent, NSScreen, NSWindowCollectionBehavior};
     use objc2_foundation::{NSPoint, NSRect, NSSize};
-    let (Some(native), Some(mtm)) = (ns_window(window), MainThreadMarker::new()) else { return };
+    let (Some(native), Some(mtm)) = (ns_window(window), MainThreadMarker::new()) else {
+        log(format_args!("show_panel: no native window"));
+        return;
+    };
     let at = NSEvent::mouseLocation();
     let screens = NSScreen::screens(mtm);
     let inside = |f: NSRect| at.x >= f.origin.x && at.x < f.origin.x + f.size.width && at.y >= f.origin.y && at.y < f.origin.y + f.size.height;

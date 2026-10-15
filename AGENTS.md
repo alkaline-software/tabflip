@@ -91,6 +91,11 @@ that reads wrong gets a test in `label.rs` and, if needed, an entry in
   sample rows, writes a picture of it and quits.
   `TABFLIP_SHOT_SETTINGS=/path/settings.png` does the same for Settings.
   Neither needs any permission: a process may capture its own windows.
+- `TABFLIP_DEMO_LOOP=/dir target/debug/tabflip` shows and puts away the
+  panel four times, as rounds do, writing `demo0.png`… to `/dir`. A bug
+  that only shows from the second round on (a resize gpui never heard of)
+  shows here and not in `TABFLIP_SHOT`.
+- Debug builds log what each round did to `~/Library/Logs/tabflip-dev.log`.
 
 ## Dev builds and signing
 
