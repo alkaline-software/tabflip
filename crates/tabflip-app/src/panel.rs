@@ -15,6 +15,8 @@ use gpui::*;
 
 use crate::controller::{self, Controller};
 
+// The measures at Small; Medium and Large scale every one of them
+// (`look::Size::scale`). The margin, room for the shadow, does not scale.
 const ROW_H: f32 = 30.;
 const WIDTH: f32 = 300.;
 const PAD: f32 = 6.;
@@ -37,6 +39,9 @@ pub struct Panel {
     slide_since: Instant,
     last_selected: Option<usize>,
     scroll: ScrollHandle,
+    /// The size the list was shown at: kept for the round, so a change in
+    /// Settings takes effect from the next one.
+    scale: f32,
 }
 
 pub fn open(controller: Entity<Controller>, cx: &mut App) -> Option<WindowHandle<Panel>> {
@@ -58,7 +63,7 @@ pub fn open(controller: Entity<Controller>, cx: &mut App) -> Option<WindowHandle
             let now = Instant::now() - LEAVE * 2;
             cx.new(|cx| {
                 cx.observe(&controller, |_, _, cx| cx.notify()).detach();
-                Panel { controller, shown: now, leaving: Some(now), showing: 0, slide_from: 0., slide_since: now, last_selected: None, scroll: ScrollHandle::new() }
+                Panel { controller, shown: now, leaving: Some(now), showing: 0, slide_from: 0., slide_since: now, last_selected: None, scroll: ScrollHandle::new(), scale: 1. }
             })
         },
     )
@@ -77,13 +82,15 @@ fn progress(since: Instant, over: Duration) -> f32 {
 impl Panel {
     /// Shown for a round with `rows` rows, sized to them.
     pub fn appear(&mut self, rows: usize, window: &mut Window, cx: &mut Context<Self>) {
-        let most = ((crate::sys::screen_height() as f32 * 0.7 - 2. * PAD) / ROW_H).floor().max(1.) as usize;
-        let height = rows.clamp(1, most) as f32 * ROW_H + 2. * (PAD + MARGIN);
+        self.scale = self.controller.read(cx).config.size().scale();
+        let (row_h, pad, width) = (ROW_H * self.scale, PAD * self.scale, WIDTH * self.scale);
+        let most = ((crate::sys::screen_height() as f32 * 0.7 - 2. * pad) / row_h).floor().max(1.) as usize;
+        let height = rows.clamp(1, most) as f32 * row_h + 2. * (pad + MARGIN);
         self.showing += 1;
         self.shown = Instant::now();
         self.leaving = None;
         self.last_selected = None;
-        crate::sys::show_panel(window, (WIDTH + 2. * MARGIN) as f64, height as f64);
+        crate::sys::show_panel(window, (width + 2. * MARGIN) as f64, height as f64);
         // gpui hears of a resize through an update of this window, which
         // is the one being updated now, so it would never hear of it: the
         // list would be drawn at the size it was opened with, one row.
@@ -120,12 +127,17 @@ struct Colors {
     pick_text: Hsla,
 }
 
-fn colors(window: &Window) -> Colors {
+/// The panel's colours in the system's appearance, with the highlight
+/// Settings chose (`look::highlight`), and text on it that can be read.
+fn colors(window: &Window, highlight: &str) -> Colors {
+    use tabflip_core::look;
     let dark = matches!(window.appearance(), WindowAppearance::Dark | WindowAppearance::VibrantDark);
+    let pick = look::highlight(highlight, dark);
+    let pick_text = if look::dark_text_on(pick) { rgb(0x1d1d1f).into() } else { gpui::white() };
     if dark {
-        Colors { ground: rgba(0x1e1e20f2).into(), edge: rgba(0xffffff1f).into(), text: rgba(0xf5f5f7ff).into(), dim: rgba(0xf5f5f780).into(), pick: rgb(0x0a84ff).into(), pick_text: gpui::white() }
+        Colors { ground: rgba(0x1e1e20f2).into(), edge: rgba(0xffffff1f).into(), text: rgba(0xf5f5f7ff).into(), dim: rgba(0xf5f5f780).into(), pick: rgb(pick).into(), pick_text }
     } else {
-        Colors { ground: rgba(0xf6f6f6f5).into(), edge: rgba(0x0000001a).into(), text: rgba(0x1d1d1fff).into(), dim: rgba(0x1d1d1f80).into(), pick: rgb(0x007aff).into(), pick_text: gpui::white() }
+        Colors { ground: rgba(0xf6f6f6f5).into(), edge: rgba(0x0000001a).into(), text: rgba(0x1d1d1fff).into(), dim: rgba(0x1d1d1f80).into(), pick: rgb(pick).into(), pick_text }
     }
 }
 
@@ -134,6 +146,9 @@ impl Render for Panel {
         let c = self.controller.read(cx);
         let selected = c.selected();
         let rows = c.rows.clone();
+        let highlight = c.config.highlight().to_string();
+        let k = self.scale;
+        let row_h = ROW_H * k;
 
         if selected != self.last_selected {
             if let Some(s) = selected {
@@ -141,7 +156,7 @@ impl Render for Panel {
                 // short by the next key goes on from there.
                 self.slide_from = match self.last_selected {
                     Some(_) => self.highlight_y(),
-                    None => s as f32 * ROW_H,
+                    None => s as f32 * row_h,
                 };
                 self.slide_since = Instant::now();
                 self.scroll.scroll_to_item(s);
@@ -157,7 +172,7 @@ impl Render for Panel {
         if moving {
             window.request_animation_frame();
         }
-        let colors = colors(window);
+        let colors = colors(window, &highlight);
         // A few points of drift as it fades, down into place.
         let drift = 6. * (1. - opacity);
         let highlight_y = self.highlight_y();
@@ -170,7 +185,7 @@ impl Render for Panel {
             .overflow_y_scroll()
             .track_scroll(&self.scroll)
             .when(selected.is_some(), |d| {
-                d.child(div().absolute().left_0().right_0().top(px(highlight_y)).h(px(ROW_H)).rounded(px(7.)).bg(colors.pick))
+                d.child(div().absolute().left_0().right_0().top(px(highlight_y)).h(px(row_h)).rounded(px(7. * k)).bg(colors.pick))
             })
             .children(rows.into_iter().enumerate().map(|(i, row)| {
                 let on = selected == Some(i);
@@ -179,11 +194,11 @@ impl Render for Panel {
                 div()
                     .id(i)
                     .relative()
-                    .h(px(ROW_H))
+                    .h(px(row_h))
                     .flex()
                     .items_center()
-                    .gap(px(8.))
-                    .px(px(9.))
+                    .gap(px(8. * k))
+                    .px(px(9. * k))
                     // The panel can open under a pointer at rest, and the
                     // system says the pointer moved as it does; only a move
                     // made after it is in counts.
@@ -194,19 +209,19 @@ impl Render for Panel {
                     })
                     .on_click(move |_, _, cx| click.update(cx, |c, cx| c.click(i, cx)))
                     .child(match row.icon {
-                        Some(icon) => img(icon).size(px(16.)).flex_shrink_0().into_any_element(),
-                        None => div().size(px(16.)).flex_shrink_0().into_any_element(),
+                        Some(icon) => img(icon).size(px(16. * k)).flex_shrink_0().into_any_element(),
+                        None => div().size(px(16. * k)).flex_shrink_0().into_any_element(),
                     })
-                    .child(div().flex_shrink_1().min_w_0().overflow_hidden().whitespace_nowrap().text_ellipsis().text_size(px(13.)).text_color(if on { colors.pick_text } else { colors.text }).child(row.label))
-                    .child(div().ml_auto().flex_shrink_0().max_w(px(110.)).overflow_hidden().whitespace_nowrap().text_ellipsis().text_size(px(11.)).text_color(if on { colors.pick_text.opacity(0.75) } else { colors.dim }).child(row.app))
+                    .child(div().flex_shrink_1().min_w_0().overflow_hidden().whitespace_nowrap().text_ellipsis().text_size(px(13. * k)).text_color(if on { colors.pick_text } else { colors.text }).child(row.label))
+                    .child(div().ml_auto().flex_shrink_0().max_w(px(110. * k)).overflow_hidden().whitespace_nowrap().text_ellipsis().text_size(px(11. * k)).text_color(if on { colors.pick_text.opacity(0.75) } else { colors.dim }).child(row.app))
             }));
 
         div().size_full().p(px(MARGIN)).font_family(".SystemUIFont").child(
             div()
                 .size_full()
                 .opacity(opacity)
-                .p(px(PAD))
-                .rounded(px(12.))
+                .p(px(PAD * k))
+                .rounded(px(12. * k))
                 .bg(colors.ground)
                 .border_1()
                 .border_color(colors.edge)
@@ -220,7 +235,7 @@ impl Render for Panel {
 
 impl Panel {
     fn highlight_y(&self) -> f32 {
-        let to = self.last_selected.unwrap_or(0) as f32 * ROW_H;
+        let to = self.last_selected.unwrap_or(0) as f32 * ROW_H * self.scale;
         let t = ease(progress(self.slide_since, SLIDE));
         self.slide_from + (to - self.slide_from) * t
     }

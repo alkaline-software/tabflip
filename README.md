@@ -41,6 +41,12 @@ tabflip lives in the menu bar. **Settings…** there sets:
 - **Shortcut.** ⌘Tab by default, which turns off the Mac's own ⌘Tab
   while tabflip runs (it comes back when tabflip quits). Click the
   shortcut and press another: ⌥Tab, ⌃Tab, ⌘\`, any modifier and a key.
+- **List size.** Small, Medium or Large: rows, icons and text all grow
+  together.
+- **Highlight.** The colour of the selected row: one of the system's
+  colours (Blue, Purple, Pink, Red, Orange, Green, Teal, Graphite), which
+  follow light and dark mode, or any colour of your own as a hex code
+  (`#ff8800`). Text on a pale colour turns dark so it stays readable.
 - **Open at login.**
 
 ## How it is built

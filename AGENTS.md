@@ -16,6 +16,7 @@ crates/tabflip-core/src/
   label.rs      a window title → "Gmail"; twins in one app get a second part
   order.rs      on-screen stacking order, then most recently used
   switcher.rs   the states a round goes through, and the effects asked of the app
+  look.rs       list size (a scale on every measure) and the highlight: presets, hex, text on it
   config.rs     ~/Library/Application Support/tabflip/config.json (TABFLIP_HOME overrides)
 crates/tabflip-app/src/
   main.rs       start-up, the --list and TABFLIP_SHOT probes, restoring ⌘Tab on exit

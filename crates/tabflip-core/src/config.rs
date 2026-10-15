@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::look::{self, Size};
 use crate::shortcut::Shortcut;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -17,11 +18,15 @@ pub struct Config {
     /// How long the shortcut must be held before the list shows. A quick
     /// press and release goes to the previous window without it.
     pub appear_delay_ms: u64,
+    /// The list's size: "small", "medium" or "large".
+    pub size: String,
+    /// The selected row's colour: a preset's name ("blue") or "#rrggbb".
+    pub highlight: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120 }
+        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120, size: Size::default().to_config(), highlight: look::DEFAULT_HIGHLIGHT.into() }
     }
 }
 
@@ -51,6 +56,37 @@ impl Config {
         self.shortcut = shortcut.to_config();
     }
 
+    pub fn size(&self) -> Size {
+        Size::from_config(&self.size)
+    }
+
+    pub fn set_size(&mut self, size: Size) {
+        self.size = size.to_config();
+    }
+
+    /// The highlight as the config gives it, or the default when it is
+    /// neither a preset nor a colour.
+    pub fn highlight(&self) -> &str {
+        if look::is_highlight(&self.highlight) {
+            &self.highlight
+        } else {
+            look::DEFAULT_HIGHLIGHT
+        }
+    }
+
+    /// A preset's name, or a colour, written as `#rrggbb`. Anything else
+    /// is refused.
+    pub fn set_highlight(&mut self, text: &str) -> bool {
+        if let Some(p) = look::preset(text) {
+            self.highlight = p.name.to_lowercase();
+        } else if let Some(rgb) = look::parse_hex(text) {
+            self.highlight = look::to_hex(rgb);
+        } else {
+            return false;
+        }
+        true
+    }
+
     /// Kept between 0 and a second, whatever the file says.
     pub fn appear_delay_ms(&self) -> u64 {
         self.appear_delay_ms.min(1000)
@@ -72,6 +108,24 @@ pub fn path() -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn look_fields_parse_or_fall_back() {
+        let c: Config = serde_json::from_str(r##"{"size":"large","highlight":"#F80"}"##).unwrap();
+        assert_eq!(c.size(), Size::Large);
+        assert_eq!(c.highlight(), "#F80");
+        let c: Config = serde_json::from_str(r#"{"size":"enormous","highlight":"chartreuse"}"#).unwrap();
+        assert_eq!(c.size(), Size::Small);
+        assert_eq!(c.highlight(), "blue");
+
+        let mut c = Config::default();
+        assert!(c.set_highlight("Green"));
+        assert_eq!(c.highlight, "green");
+        assert!(c.set_highlight("#F80"));
+        assert_eq!(c.highlight, "#ff8800");
+        assert!(!c.set_highlight("#ff88"));
+        assert_eq!(c.highlight, "#ff8800");
+    }
 
     #[test]
     fn missing_fields_take_defaults() {

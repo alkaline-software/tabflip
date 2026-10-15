@@ -1,11 +1,14 @@
-//! Settings: the shortcut, Accessibility, and opening at login. Opened
-//! from the menu bar item, and by itself while Accessibility is missing.
+//! Settings: the shortcut, the list's size and highlight colour,
+//! Accessibility, and opening at login. Opened from the menu bar item, and
+//! by itself while Accessibility is missing.
 
 use gpui::prelude::FluentBuilder as _;
 use gpui::*;
 use gpui_component::button::{Button, ButtonVariants as _};
+use gpui_component::input::{Input, InputEvent, InputState};
 use gpui_component::switch::Switch;
 use gpui_component::{h_flex, v_flex, ActiveTheme as _, Disableable as _, Root, Sizable as _};
+use tabflip_core::look::{self, Size};
 use tabflip_core::shortcut::Shortcut;
 
 use crate::controller::{self, Controller};
@@ -15,6 +18,32 @@ pub struct Settings {
     controller: Entity<Controller>,
     login: bool,
     login_error: Option<SharedString>,
+    /// A highlight colour of one's own, typed as hex.
+    hex: Entity<InputState>,
+    hex_error: bool,
+    _hex_changes: Subscription,
+}
+
+impl Settings {
+    fn new(controller: Entity<Controller>, window: &mut Window, cx: &mut Context<Self>) -> Self {
+        cx.observe(&controller, |_, _, cx| cx.notify()).detach();
+        // The field shows the colour in use when it is one of one's own.
+        let current = controller.read(cx).config.highlight().to_string();
+        let typed = if look::preset(&current).is_none() { current } else { String::new() };
+        let hex = cx.new(|cx| InputState::new(window, cx).placeholder("#rrggbb").default_value(typed));
+        let changes = cx.subscribe(&hex, |this, hex, e: &InputEvent, cx| {
+            if !matches!(e, InputEvent::Change) {
+                return;
+            }
+            let text = hex.read(cx).value().to_string();
+            // Kept as soon as it is a whole colour; a part-typed one is only
+            // marked once the field is left with it.
+            let ok = look::parse_hex(&text).is_some() && this.controller.update(cx, |c, cx| c.set_highlight(&text, cx));
+            this.hex_error = !ok && !text.trim().is_empty() && text.trim().trim_start_matches('#').len() >= 6;
+            cx.notify();
+        });
+        Settings { controller, login: sys::launches_at_login(), login_error: None, hex, hex_error: false, _hex_changes: changes }
+    }
 }
 
 struct Open(WindowHandle<Root>);
@@ -31,7 +60,7 @@ pub fn show(cx: &mut App) {
         }
     }
     let controller = controller::get(cx);
-    let bounds = Bounds::centered(None, size(px(460.), px(300.)), cx);
+    let bounds = Bounds::centered(None, size(px(460.), px(530.)), cx);
     let opened = cx.open_window(
         WindowOptions {
             window_bounds: Some(WindowBounds::Windowed(bounds)),
@@ -44,10 +73,7 @@ pub fn show(cx: &mut App) {
         |window, cx| {
             gpui_component::Theme::sync_system_appearance(Some(window), cx);
             window.observe_window_appearance(|window, cx| gpui_component::Theme::sync_system_appearance(Some(window), cx)).detach();
-            let view = cx.new(|cx| {
-                cx.observe(&controller, |_, _, cx| cx.notify()).detach();
-                Settings { controller, login: sys::launches_at_login(), login_error: None }
-            });
+            let view = cx.new(|cx| Settings::new(controller, window, cx));
             // Closing Settings while it records gives up the recording.
             let c = view.read(cx).controller.clone();
             window.on_window_should_close(cx, move |_, cx| {
@@ -79,7 +105,7 @@ fn row(label: &'static str, cx: &App) -> Div {
 }
 
 impl Render for Settings {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let c = self.controller.read(cx);
         let (listening, recording) = (c.listening, c.recording);
         let shortcut = c.config.shortcut();
@@ -123,6 +149,57 @@ impl Render for Settings {
             Button::new("grant").label("Open System Settings").primary().small().on_click(|_, _, _| sys::open_url(sys::ACCESSIBILITY_SETTINGS_URL)).into_any_element()
         };
 
+        let size_now = c.config.size();
+        let sizes = h_flex().gap_1().children(Size::ALL.into_iter().map(|size| {
+            let controller = controller.clone();
+            Button::new(size.name())
+                .label(size.name())
+                .small()
+                .when(size == size_now, |b| b.primary())
+                .when(size != size_now, |b| b.outline())
+                .on_click(move |_, _, cx| controller.update(cx, |c, cx| c.set_size(size, cx)))
+        }));
+
+        // The swatches in the appearance the list will be drawn in.
+        let dark = matches!(window.appearance(), WindowAppearance::Dark | WindowAppearance::VibrantDark);
+        let highlight = c.config.highlight().to_string();
+        let swatches = h_flex().gap(px(6.)).children(look::PRESETS.iter().map(|p| {
+            let on = p.name.eq_ignore_ascii_case(&highlight);
+            let (controller, hex) = (controller.clone(), self.hex.clone());
+            let name = p.name;
+            div()
+                .id(name)
+                .size(px(20.))
+                .rounded_full()
+                .bg(rgb(if dark { p.dark } else { p.light }))
+                .border_2()
+                .border_color(if on { cx.theme().foreground } else { gpui::transparent_black() })
+                .cursor_pointer()
+                .tooltip(move |window, cx| gpui_component::tooltip::Tooltip::new(name).build(window, cx))
+                .on_click(move |_, window, cx| {
+                    controller.update(cx, |c, cx| c.set_highlight(name, cx));
+                    hex.update(cx, |h, cx| h.set_value("", window, cx));
+                })
+        }));
+
+        // A row as the list draws it, at the chosen size and colour.
+        let preview = {
+            let k = size_now.scale();
+            let pick = look::highlight(&highlight, dark);
+            let text = if look::dark_text_on(pick) { rgb(0x1d1d1f).into() } else { gpui::white() };
+            h_flex()
+                .w(px(220. * k.min(1.25)))
+                .h(px(30. * k))
+                .px(px(9. * k))
+                .gap(px(8. * k))
+                .rounded(px(7. * k))
+                .bg(rgb(pick))
+                .text_color(text)
+                .child(div().size(px(16. * k)).rounded(px(4. * k)).bg(text.opacity(0.35)))
+                .child(div().text_size(px(13. * k)).child("Gmail"))
+                .child(div().ml_auto().text_size(px(11. * k)).opacity(0.75).child("Google Chrome"))
+        };
+
         let login = Switch::new("login").checked(self.login).on_click(cx.listener(|this, on: &bool, _, cx| {
             match sys::set_launch_at_login(*on) {
                 Ok(()) => this.login_error = None,
@@ -143,6 +220,10 @@ impl Render for Settings {
             .child(div().pb_3().text_color(cx.theme().muted_foreground).child("Hold the shortcut, press it again to move down the list, let go to switch."))
             .child(row("Shortcut", cx).child(shortcut_button).child(reset))
             .child(div().pl(px(142.)).h(px(18.)).text_size(px(11.)).text_color(if c.record_error.is_some() { cx.theme().danger } else { cx.theme().muted_foreground }).children(note))
+            .child(row("List size", cx).child(sizes))
+            .child(row("Highlight", cx).child(swatches))
+            .child(row("", cx).child(div().w(px(110.)).child(Input::new(&self.hex).small())).when(self.hex_error, |r| r.child(div().text_size(px(11.)).text_color(cx.theme().danger).child("Not a colour"))))
+            .child(div().pl(px(142.)).py_2().child(preview))
             .child(row("Accessibility", cx).child(access))
             .when(!listening, |d| d.child(div().pl(px(142.)).text_size(px(11.)).text_color(cx.theme().muted_foreground).child("Turn tabflip on in the list, and it starts by itself.")))
             .child(row("Open at login", cx).child(login))

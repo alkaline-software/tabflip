@@ -6310,7 +6310,7 @@ dependencies = [
 
 [[package]]
 name = "tabflip-app"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "block2 0.6.2",
@@ -6329,7 +6329,7 @@ dependencies = [
 
 [[package]]
 name = "tabflip-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "dirs 5.0.1",
  "serde",

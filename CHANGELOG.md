@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.1.2
+
+The list's size and highlight colour can be chosen in Settings.
+
+- **List size: Small, Medium or Large.** Small is the list as it was.
+  Medium makes everything in it a quarter bigger and Large half again:
+  rows, icons, text, spacing and the list's width grow together. A
+  change applies from the next ⌘Tab.
+- **Highlight colour.** The selected row can be any of eight of the
+  Mac's own colours (Blue, Purple, Pink, Red, Orange, Green, Teal,
+  Graphite), which follow light and dark mode as the system's do, or a
+  colour of your own typed as a hex code (`#ff8800` or `#f80`). A code
+  is kept as soon as it is complete; one that is not a colour is marked
+  "Not a colour" and not kept.
+- **Readable on any colour.** Text on the highlight turns dark on a pale
+  colour (yellow, light grey) and stays white on the rest.
+- **A preview in Settings.** A sample row under the colours shows the
+  chosen size and highlight.
+- Settings is taller to fit the new rows.
+
+Both are stored in `config.json` as `"size"` (`"small"`, `"medium"`,
+`"large"`) and `"highlight"` (a colour's name or `"#rrggbb"`). A value
+that is not one falls back to Small and Blue without touching the other
+settings.
+
+For developers:
+
+- `tabflip-core/src/look.rs` holds the sizes (`Size::scale`), the
+  presets, hex parsing and the dark-or-white text rule, with tests. The
+  panel multiplies every measure by the scale it was shown at.
+
 ## v0.1.1
 
 Fixes the list showing only one row.

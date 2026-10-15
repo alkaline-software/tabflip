@@ -370,11 +370,32 @@ impl Controller {
         }
     }
 
-    pub fn set_shortcut(&mut self, s: Shortcut) {
-        self.config.set_shortcut(s);
+    pub fn set_size(&mut self, size: tabflip_core::look::Size, cx: &mut Context<Self>) {
+        self.config.set_size(size);
+        self.save();
+        cx.notify();
+    }
+
+    /// A preset's name or a hex colour; false, and nothing kept, for
+    /// anything else.
+    pub fn set_highlight(&mut self, text: &str, cx: &mut Context<Self>) -> bool {
+        if !self.config.set_highlight(text) {
+            return false;
+        }
+        self.save();
+        cx.notify();
+        true
+    }
+
+    fn save(&self) {
         if let Err(e) = self.config.save() {
             eprintln!("tabflip: could not save settings: {e}");
         }
+    }
+
+    pub fn set_shortcut(&mut self, s: Shortcut) {
+        self.config.set_shortcut(s);
+        self.save();
         self.apply_shortcut();
     }
 }
