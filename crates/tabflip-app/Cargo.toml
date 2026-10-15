@@ -13,8 +13,8 @@ path = "src/main.rs"
 tabflip-core = { path = "../tabflip-core" }
 anyhow.workspace = true
 futures = "0.3"
-# The zed revision is pinned in Cargo.lock (cargo update -p gpui --precise <rev>),
-# the same one emaki builds against. gpui-component depends on the unpinned zed
+# The zed revision is pinned in Cargo.lock (cargo update -p gpui --precise <rev>).
+# gpui-component depends on the unpinned zed
 # source, so a `rev` here would produce a second copy of gpui.
 gpui = { git = "https://github.com/zed-industries/zed" }
 gpui_platform = { git = "https://github.com/zed-industries/zed", features = ["font-kit", "runtime_shaders"] }

@@ -15,9 +15,8 @@ The names never change, so `releases/latest/download/<name>` links stay
 valid.
 
 **Who does what.** Anyone with write access does steps 1–3. Steps 4–5 need
-the Developer ID certificate and a notarytool profile, which Pingfan has
-(the same ones emaki ships with). Nothing personal is in the repository:
-the scripts find the certificate in the keychain, or take
+the Developer ID certificate and a notarytool profile, which Pingfan has.
+Nothing personal is in the repository: the scripts find the certificate in the keychain, or take
 `TABFLIP_SIGN_IDENTITY` and `TABFLIP_NOTARY_PROFILE`.
 
 ## One-time setup

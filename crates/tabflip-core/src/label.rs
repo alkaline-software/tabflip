@@ -199,8 +199,8 @@ mod tests {
         assert_eq!(chrome("Facebook"), "Facebook");
         assert_eq!(chrome("(12) Rust in 100 Seconds - YouTube"), "YouTube");
         assert_eq!(chrome("Inbox - Gmail - Google Chrome - John (Work)"), "Gmail");
-        assert_eq!(short_label("Safari", "com.apple.Safari", "Pull requests · alkaline-software/emaki"), "alkaline-software/emaki");
-        assert_eq!(chrome("alkaline-software/emaki: Every coding-agent session on your machine"), "alkaline-software/emaki");
+        assert_eq!(short_label("Safari", "com.apple.Safari", "Pull requests · rust-lang/rust"), "rust-lang/rust");
+        assert_eq!(chrome("rust-lang/rust: Empowering everyone to build reliable software"), "rust-lang/rust");
     }
 
     #[test]

@@ -121,7 +121,7 @@ pub fn open_url(url: &str) {
 /// for looking at the panel from a script (`TABFLIP_SHOT`). A process may
 /// capture its own windows without Screen Recording access.
 /// `CGWindowListCreateImage` is looked up by name: newer SDKs mark it
-/// unavailable, while the function is still there (emaki's `shoot_window`).
+/// unavailable, while the function is still there.
 pub fn shoot_window(window: &gpui::Window, path: &std::path::Path) -> Result<(), String> {
     use std::ffi::{c_char, c_void, CString};
     use std::os::unix::ffi::OsStrExt;

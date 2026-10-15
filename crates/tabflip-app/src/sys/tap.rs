@@ -1,5 +1,4 @@
-//! The keyboard, seen in every app: an event tap on the main run loop,
-//! as emaki's dictation has (`emaki-app/src/sys.rs`, `mod outside`).
+//! The keyboard, seen in every app: an event tap on the main run loop.
 //!
 //! The tap only matches and forwards; anything slow happens in the app.
 //! It keeps from the app in front the shortcut's key, and while the

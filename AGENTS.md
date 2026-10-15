@@ -5,9 +5,8 @@
 **tabflip** is a macOS window switcher (Rust + GPUI, `crates/`). Hold the
 shortcut (⌘Tab by default) and a vertical list of every window shows, each
 row an app icon, a word or two for the window, and the app's name. Let go
-and that exact window comes to the front. That is all it does. It is built
-on emaki's stack (`../emaki`, github.com/alkaline-software/emaki) and
-follows its conventions.
+and that exact window comes to the front. That is all it does. It is a
+stand-alone app with no code or runtime tie to any other project.
 
 ## Layout
 
@@ -68,7 +67,7 @@ starts as a core test.
   out over the picked window and is hidden only after a clear frame has been
   drawn, so the next round never flashes the last one's rows. A round
   number keeps a late put-away from hiding a newer showing.
-- **Motion, as in emaki:** nothing jumps. The panel fades and drifts in, the
+- **Motion:** nothing jumps. The panel fades and drifts in, the
   highlight slides between rows, and both ease out (`ease`, a cubic).
 - **Only the current Space** (plus minimized and hidden windows) in v1. A
   window neither on screen nor put away is on another Space and is left out
@@ -102,12 +101,11 @@ every build. `scripts/make-dev-cert.sh` makes a self-signed "tabflip dev"
 certificate once, so it doesn't have to be.
 
 Releases are signed and notarized by whoever holds the Developer ID (at
-present Pingfan, as for emaki). WORKFLOW.md.
+present Pingfan). WORKFLOW.md.
 
 ## Dependencies
 
-gpui is a `git` dependency with no `rev`; the pin is in `Cargo.lock`, at the
-same zed commit emaki uses (`cargo update -p gpui --precise <rev>` moves
+gpui is a `git` dependency with no `rev`; the pin is in `Cargo.lock`, at a
+fixed zed commit (`cargo update -p gpui --precise <rev>` moves
 it). A `rev` in the manifest makes a second gpui that gpui-component won't
-build against. gpui-component is upstream at the revision emaki vendored
-from; tabflip uses none of the parts emaki patched.
+build against. gpui-component is upstream, pinned by `rev` in the app's manifest.

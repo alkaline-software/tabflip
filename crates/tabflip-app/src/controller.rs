@@ -241,7 +241,7 @@ impl Controller {
             ("dev.zed.Zed", "Zed", "tabflip — main.rs"),
             ("com.apple.finder", "Finder", "Downloads"),
             ("com.apple.Terminal", "Terminal", "jhelvy — -zsh — 80×24"),
-            ("com.apple.Safari", "Safari", "Pull requests · alkaline-software/emaki"),
+            ("com.apple.Safari", "Safari", "Pull requests · rust-lang/rust"),
         ];
         let apps = sys::windows::apps();
         let titled: Vec<Titled> = SAMPLES.iter().map(|(bundle_id, app_name, title)| Titled { app_name, bundle_id, title }).collect();

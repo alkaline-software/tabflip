@@ -6,7 +6,7 @@
 // A stack of window rows on a deep blue square, the second row lit, as
 // the switcher looks mid-flip. The square is full and opaque to its
 // corners: macOS 26 masks every app icon to its own rounded shape, and
-// anything transparent shows as a grey border (emaki's docs/platform.md).
+// anything transparent shows as a grey border.
 import AppKit
 
 let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "."

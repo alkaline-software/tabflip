@@ -1,5 +1,5 @@
 //! The Accessibility API and the few CoreFoundation calls around it,
-//! declared by hand as emaki declares its event tap: the crates that wrap
+//! declared by hand: the crates that wrap
 //! them pull in far more than the dozen functions used here.
 //!
 //! CoreFoundation strings, arrays and dictionaries are the same objects as

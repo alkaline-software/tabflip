@@ -46,8 +46,8 @@ tabflip lives in the menu bar. **Settings…** there sets:
 ## How it is built
 
 Rust, with [GPUI](https://www.gpui.rs) (the Zed editor's UI framework) and
-[gpui-component](https://github.com/longbridge/gpui-component), on the same
-stack as [emaki](https://github.com/alkaline-software/emaki).
+[gpui-component](https://github.com/longbridge/gpui-component), and
+[objc2](https://github.com/madsmtm/objc2) for the macOS calls.
 
 ```
 crates/tabflip-core   the shortcut, the labels, the order, the switcher's states; tested anywhere
