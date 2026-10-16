@@ -111,6 +111,23 @@ pub fn screen_height() -> f64 {
         .unwrap_or(800.)
 }
 
+/// No Dock icon and no menu at the screen's top: an app of the menu bar.
+/// gpui makes every app a regular one as it starts, over the bundle's
+/// `LSUIElement`, so this is said again after it.
+pub fn stay_in_menu_bar() {
+    in_dock(false);
+}
+
+/// In the Dock and the app switcher while Settings are open, as any app
+/// with a window is, so the window is found again once another app covers
+/// it; back to the menu bar alone when it closes.
+pub fn in_dock(on: bool) {
+    use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
+    let Some(mtm) = MainThreadMarker::new() else { return };
+    let policy = if on { NSApplicationActivationPolicy::Regular } else { NSApplicationActivationPolicy::Accessory };
+    NSApplication::sharedApplication(mtm).setActivationPolicy(policy);
+}
+
 /// Whether tabflip opens when the person logs in, as System Settings'
 /// Login Items lists it.
 pub fn launches_at_login() -> bool {

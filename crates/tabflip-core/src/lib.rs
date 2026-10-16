@@ -11,3 +11,4 @@ pub mod look;
 pub mod order;
 pub mod shortcut;
 pub mod switcher;
+pub mod update;

@@ -17,12 +17,16 @@ crates/tabflip-core/src/
   order.rs      on-screen stacking order, then most recently used
   switcher.rs   the states a round goes through, and the effects asked of the app
   look.rs       list size (a scale on every measure) and the highlight: presets, hex, text on it
+  update.rs     the newest published release (GitHub's releases/latest redirect, via curl)
   config.rs     ~/Library/Application Support/tabflip/config.json (TABFLIP_HOME overrides)
 crates/tabflip-app/src/
   main.rs       start-up, the --list and TABFLIP_SHOT probes, restoring ⌘Tab on exit
   controller.rs keys in, core effects out, carried out on the Mac
   panel.rs      the list's window and its drawing
-  settings.rs   the Settings window
+  settings.rs   the Settings window: rail of sections, groups of rows on cards
+  ui.rs         the window's small parts: the pill button, key caps, a page coming in
+  theme.rs      the Settings palette (themes/tabflip.json) with the accent painted in
+  assets.rs     our icons (assets/icons, Tabler) over gpui-component's
   sys/          every macOS call: ax (Accessibility FFI), windows, focus, tap,
                 private (SkyLight), status_item, and window placement in mod.rs
 ```
@@ -75,6 +79,33 @@ starts as a core test.
   in `windows::list`. All-Spaces needs the private CGS space APIs; see
   AltTab for how.
 
+## Menu bar and Dock
+
+- tabflip is a menu bar app: `LSUIElement` in the bundle, and
+  `sys::stay_in_menu_bar` at launch, because gpui makes every app a
+  regular one as it starts, over the bundle's own say.
+- While Settings are open it is a regular app (`sys::in_dock(true)` in
+  `settings::show`), in the Dock and the app switcher with its own menu
+  (`app_menus`), so the window can be found again once another app covers
+  it. `settings::watch_close` puts it back on `on_window_closed`, never
+  `on_window_should_close`: ⌘W closes the window from code
+  (`remove_window`), which never asks.
+- The menu bar item can be hidden (General, Show in menu bar). Opening
+  tabflip again from Finder or Spotlight shows Settings (`on_reopen`).
+
+## Settings look
+
+Drawn as Alkaline Software's other apps draw theirs (Kotoba's
+`docs/design.md` is the standard): 780 by 560, a transparent title bar
+with the traffic lights over a 190-wide rail, the section's name in the
+window's top (52 tall, 15 pt semibold), a page margin of 36. A section is
+groups (`group`), 18 apart, each a small quiet name over a card rounded
+12; a row (`line`) is at least 46 tall with its name in 13 pt and a line
+under it in 11.5 pt. On or off is a switch, a choice among a few is
+`segmented`, a button is `ui::pill`. Controls on a page share one width
+(`CONTROL_W`) so they start and end together. The accent is the icon's
+blue (`theme.rs`); the switcher's list keeps its own colours.
+
 ## Labels
 
 `label::short_label` cuts a title at ` - `, ` — `, ` – `, ` | `, ` · `, ` • `
@@ -90,7 +121,8 @@ that reads wrong gets a test in `label.rs` and, if needed, an entry in
   their labels. The terminal running it needs Accessibility.
 - `TABFLIP_SHOT=/path/panel.png target/debug/tabflip` shows the panel with
   sample rows, writes a picture of it and quits.
-  `TABFLIP_SHOT_SETTINGS=/path/settings.png` does the same for Settings.
+  `TABFLIP_SHOT_SETTINGS=/path/settings.png` does the same for Settings
+  (`TABFLIP_SETTINGS=customize` picks the section).
   Neither needs any permission: a process may capture its own windows.
 - `TABFLIP_DEMO_LOOP=/dir target/debug/tabflip` shows and puts away the
   panel four times, as rounds do, writing `demo0.png`… to `/dir`. A bug

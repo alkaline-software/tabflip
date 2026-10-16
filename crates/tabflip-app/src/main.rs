@@ -1,16 +1,39 @@
 //! tabflip: switch between windows, not apps.
 //!
-//! An agent app (no Dock icon) with an item in the menu bar. Hold the
-//! shortcut (⌘Tab by default) and a list of every window shows; let go
-//! and the selected one comes to the front. `tabflip --list` prints the
-//! windows as the switcher would show them.
+//! A menu bar app: an item in the menu bar and no Dock icon, except
+//! while Settings are open. Hold the shortcut (⌘Tab by default) and a list
+//! of every window shows; let go and the selected one comes to the front.
+//! `tabflip --list` prints the windows as the switcher would show them.
 
+mod assets;
 mod controller;
 mod panel;
 mod settings;
 mod sys;
+mod theme;
+mod ui;
 
 use gpui::*;
+
+actions!(tabflip, [Quit, Hide, HideOthers, ShowAll, CloseWindow, OpenSettings]);
+
+/// The app's menu at the screen's top, there while Settings are open and
+/// tabflip is in the Dock: the Mac's own choices for an app.
+fn app_menus() -> Vec<Menu> {
+    vec![Menu {
+        name: "tabflip".into(),
+        disabled: false,
+        items: vec![
+            MenuItem::action("Settings…", OpenSettings),
+            MenuItem::separator(),
+            MenuItem::action("Hide tabflip", Hide),
+            MenuItem::action("Hide Others", HideOthers),
+            MenuItem::action("Show All", ShowAll),
+            MenuItem::separator(),
+            MenuItem::action("Quit tabflip", Quit),
+        ],
+    }]
+}
 
 fn main() {
     // The system's ⌘Tab is put back on before anything else: a tabflip
@@ -25,11 +48,37 @@ fn main() {
         return;
     }
 
-    gpui_platform::application().run(|cx: &mut App| {
+    let app = gpui_platform::application().with_assets(assets::Assets);
+    // Opened again from Finder or Spotlight while running: Settings, which
+    // is the way back to them with the menu bar item hidden.
+    app.on_reopen(|cx| {
+        if cx.try_global::<controller::Global_>().is_some() {
+            settings::show(None, cx);
+        }
+    });
+    app.run(|cx: &mut App| {
         gpui_component::init(cx);
+        sys::stay_in_menu_bar();
+        theme::install(cx);
         let controller = cx.new(|_| controller::Controller::new());
         cx.set_global(controller::Global_(controller.clone()));
         panel::install(cx);
+        settings::watch_close(cx);
+
+        cx.on_action(|_: &Quit, cx| cx.quit());
+        cx.on_action(|_: &Hide, cx| cx.hide());
+        cx.on_action(|_: &HideOthers, cx| cx.hide_other_apps());
+        cx.on_action(|_: &ShowAll, cx| cx.unhide_other_apps());
+        cx.on_action(|_: &OpenSettings, cx| settings::show(None, cx));
+        cx.on_action(|_: &CloseWindow, cx| settings::close(cx));
+        cx.bind_keys([
+            KeyBinding::new("cmd-q", Quit, None),
+            KeyBinding::new("cmd-h", Hide, None),
+            KeyBinding::new("cmd-alt-h", HideOthers, None),
+            KeyBinding::new("cmd-w", CloseWindow, None),
+            KeyBinding::new("cmd-,", OpenSettings, None),
+        ]);
+        cx.set_menus(app_menus());
 
         cx.on_app_quit(|_| {
             sys::private::set_system_switcher(true);
@@ -37,12 +86,12 @@ fn main() {
         })
         .detach();
 
-        if let Some(mut menu) = sys::status_item::install() {
+        if let Some(mut menu) = sys::status_item::install(controller.read(cx).config.menu_bar_icon) {
             cx.spawn(async move |cx| {
                 use futures::StreamExt as _;
                 while let Some(command) = menu.next().await {
                     cx.update(|cx| match command {
-                        sys::status_item::Command::Settings => settings::show(cx),
+                        sys::status_item::Command::Settings => settings::show(None, cx),
                         sys::status_item::Command::Quit => cx.quit(),
                     });
                 }
@@ -62,7 +111,10 @@ fn main() {
         .detach();
 
         if let Some(path) = std::env::var_os("TABFLIP_SHOT_SETTINGS") {
-            settings::show(cx);
+            // `TABFLIP_SETTINGS=<section>` picks the section shot.
+            let section = std::env::var("TABFLIP_SETTINGS").ok().and_then(|s| settings::SECTIONS.iter().find(|(k, _, _)| *k == s).map(|(k, _, _)| *k));
+            controller.update(cx, |c, _| c.listening = sys::ax::trusted());
+            settings::show(section, cx);
             cx.spawn(async move |cx| {
                 cx.background_executor().timer(std::time::Duration::from_millis(800)).await;
                 cx.update(|cx| {
@@ -100,11 +152,18 @@ fn main() {
         }
 
         controller.update(cx, |c, cx| c.listen(cx));
+        // A newer release looked for once a day, while that is on.
+        let c = controller.clone();
+        cx.spawn(async move |cx| loop {
+            c.update(cx, |c, cx| c.check_updates(true, cx));
+            cx.background_executor().timer(std::time::Duration::from_secs(60 * 60)).await;
+        })
+        .detach();
         if !controller.read(cx).listening {
             // The system's own prompt the first time, and Settings, which
             // says what to do and notices when it is done.
             sys::ax::ask_trust();
-            settings::show(cx);
+            settings::show(Some("general"), cx);
             let mut changes = sys::trust_changes();
             let c = controller.clone();
             cx.spawn(async move |cx| {

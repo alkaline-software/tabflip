@@ -1,5 +1,6 @@
 //! tabflip's item in the menu bar: it has no Dock icon and no window most
-//! of the time, so this is where Settings and Quit are found.
+//! of the time, so this is where Settings and Quit are found. Settings can
+//! hide it (General, Show in menu bar).
 
 use std::cell::RefCell;
 
@@ -49,8 +50,8 @@ define_class!(
     }
 );
 
-/// The item in the menu bar, and what is chosen from its menu.
-pub fn install() -> Option<UnboundedReceiver<Command>> {
+/// The item in the menu bar, shown or not, and what is chosen from its menu.
+pub fn install(shown: bool) -> Option<UnboundedReceiver<Command>> {
     let mtm = MainThreadMarker::new()?;
     let (tx, rx) = unbounded();
     SENDER.with(|s| *s.borrow_mut() = Some(tx));
@@ -78,7 +79,18 @@ pub fn install() -> Option<UnboundedReceiver<Command>> {
     menu.addItem(&NSMenuItem::separatorItem(mtm));
     menu.addItem(&entry("Quit tabflip", sel!(quit:), "q"));
     item.setMenu(Some(&menu));
+    item.setVisible(shown);
 
     KEPT.with(|k| *k.borrow_mut() = Some((item, target)));
     Some(rx)
+}
+
+/// Show or hide the item. Hidden, Settings are reached by opening
+/// tabflip again (`on_reopen` in main.rs).
+pub fn set_visible(shown: bool) {
+    KEPT.with(|k| {
+        if let Some((item, _)) = k.borrow().as_ref() {
+            item.setVisible(shown);
+        }
+    });
 }

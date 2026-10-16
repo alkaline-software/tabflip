@@ -22,11 +22,18 @@ pub struct Config {
     pub size: String,
     /// The selected row's colour: a preset's name ("blue") or "#rrggbb".
     pub highlight: String,
+    /// Whether the item stands in the menu bar. Without it, Settings are
+    /// reached by opening tabflip again from Finder or Spotlight.
+    pub menu_bar_icon: bool,
+    /// Whether a newer release is looked for once a day.
+    pub check_updates: bool,
+    /// When a newer release was last looked for, Unix seconds; 0 = never.
+    pub last_update_check: u64,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120, size: Size::default().to_config(), highlight: look::DEFAULT_HIGHLIGHT.into() }
+        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120, size: Size::default().to_config(), highlight: look::DEFAULT_HIGHLIGHT.into(), menu_bar_icon: true, check_updates: true, last_update_check: 0 }
     }
 }
 
@@ -131,6 +138,7 @@ mod tests {
     fn missing_fields_take_defaults() {
         let c: Config = serde_json::from_str(r#"{"shortcut":"alt-tab"}"#).unwrap();
         assert_eq!(c.appear_delay_ms, 120);
+        assert!(c.menu_bar_icon && c.check_updates);
         assert_eq!(c.shortcut().to_config(), "alt-tab");
     }
 

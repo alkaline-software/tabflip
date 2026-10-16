@@ -12,6 +12,7 @@ use tabflip_core::label::{self, Titled};
 use tabflip_core::order::{self, Recent};
 use tabflip_core::shortcut::{Invalid, Shortcut};
 use tabflip_core::switcher::{Effect, Switcher};
+use tabflip_core::update;
 
 use crate::panel::Panel;
 use crate::sys::{self, tap::Key, windows::Window as Win};
@@ -44,6 +45,22 @@ pub struct Controller {
     pub record_error: Option<Invalid>,
     /// The system's ⌘Tab could not be switched off.
     pub system_switcher_stuck: bool,
+    /// The section Settings open on: where they were left.
+    pub section: &'static str,
+    pub update: UpdateView,
+}
+
+/// What Settings say of updates: a check under way, and what the last
+/// one found.
+#[derive(Default)]
+pub struct UpdateView {
+    pub checking: bool,
+    /// A check asked for by the button has come back.
+    pub answered: bool,
+    /// A newer published version.
+    pub available: Option<String>,
+    /// The last check could not reach GitHub.
+    pub failed: bool,
 }
 
 pub struct Global_(pub Entity<Controller>);
@@ -72,6 +89,8 @@ impl Controller {
             recording: false,
             record_error: None,
             system_switcher_stuck: false,
+            section: "general",
+            update: UpdateView::default(),
         }
     }
 
@@ -385,6 +404,58 @@ impl Controller {
         self.save();
         cx.notify();
         true
+    }
+
+    /// Show or hide the item in the menu bar.
+    pub fn set_menu_bar_icon(&mut self, on: bool, cx: &mut Context<Self>) {
+        self.config.menu_bar_icon = on;
+        sys::status_item::set_visible(on);
+        self.save();
+        cx.notify();
+    }
+
+    pub fn set_check_updates(&mut self, on: bool, cx: &mut Context<Self>) {
+        self.config.check_updates = on;
+        self.save();
+        cx.notify();
+        if on {
+            self.check_updates(true, cx);
+        }
+    }
+
+    /// Ask GitHub for the newest release, off the main thread. An
+    /// automatic check runs once a day, and only while it is switched on;
+    /// one asked for by the button always runs.
+    pub fn check_updates(&mut self, automatic: bool, cx: &mut Context<Self>) {
+        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+        if self.update.checking || (automatic && !(self.config.check_updates && update::due(self.config.last_update_check, now))) {
+            return;
+        }
+        self.update.checking = true;
+        self.update.answered = false;
+        cx.notify();
+        let task = cx.background_executor().spawn(async { update::latest() });
+        cx.spawn(async move |this, cx| {
+            let found = task.await;
+            let _ = this.update(cx, |c, cx| {
+                c.update.checking = false;
+                c.update.answered = !automatic;
+                match found {
+                    Ok(latest) => {
+                        c.update.failed = false;
+                        c.update.available = latest.filter(|v| update::is_newer(v, update::current_version()));
+                        c.config.last_update_check = now;
+                        c.save();
+                    }
+                    Err(e) => {
+                        sys::log(format_args!("update check: {e}"));
+                        c.update.failed = true;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
     }
 
     fn save(&self) {

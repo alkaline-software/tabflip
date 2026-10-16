@@ -13,6 +13,7 @@ path = "src/main.rs"
 tabflip-core = { path = "../tabflip-core" }
 anyhow.workspace = true
 dirs.workspace = true
+serde_json.workspace = true
 futures = "0.3"
 # The zed revision is pinned in Cargo.lock (cargo update -p gpui --precise <rev>).
 # gpui-component depends on the unpinned zed
@@ -20,6 +21,10 @@ futures = "0.3"
 gpui = { git = "https://github.com/zed-industries/zed" }
 gpui_platform = { git = "https://github.com/zed-industries/zed", features = ["font-kit", "runtime_shaders"] }
 gpui-component = { git = "https://github.com/longbridge/gpui-component", rev = "fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c" }
+# The toolkit's own icons, under ours (`assets.rs`).
+gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", rev = "fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c" }
+# The window selection layer, for ending a drag a swallowed click would leave open.
+gpui-base = { git = "https://github.com/longbridge/gpui-component", rev = "fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c" }
 
 # tabflip is a Mac's alone: the window list, the key tap and the switch to a
 # window are all macOS calls.
@@ -46,5 +51,7 @@ binaries = [{ path = "tabflip", main = true }]
 
 [package.metadata.packager.macos]
 minimumSystemVersion = "14.0"
-# Merged into the bundle's Info.plist: LSUIElement, so there is no Dock icon.
+# Merged into the bundle's Info.plist: LSUIElement, so there is no Dock
+# icon (gpui makes the app a regular one as it starts; `sys::stay_in_menu_bar`
+# says it again, and Settings put it in the Dock while open).
 infoPlistPath = "macos/Info.plist"

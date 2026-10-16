@@ -1,5 +1,52 @@
 # Changelog
 
+## v0.1.3
+
+tabflip stays out of the Dock, and Settings are redrawn in the look
+Alkaline Software's other apps share.
+
+- **Out of the Dock.** tabflip was meant to live in the menu bar alone,
+  but showed a Dock icon all the time: gpui makes every app a regular one
+  as it starts, over the bundle's `LSUIElement`. It now says otherwise at
+  launch, and is in the Dock (and ⌘Tab's own list) only while Settings
+  are open, so that window can be found again once another app covers
+  it. Closing Settings, by its button or ⌘W, takes it out again.
+- **Show in menu bar.** A new switch in General hides the menu bar item.
+  With it hidden, opening tabflip again from Finder or Spotlight opens
+  Settings.
+- **Settings, redrawn.** A rail of sections at the left (General,
+  Customize, Updates, About) and each section's settings as rows on
+  cards, with switches for on and off, a sliding choice for the list's
+  size, and the window's top dragged by as a title bar. The palette is
+  the one Kotoba and Emaki use, with tabflip's blue as the accent.
+  - **General:** the shortcut (shown as keys), Launch at login, Show in
+    menu bar, and Accessibility.
+  - **Customize:** the list's size, its highlight colour or a hex code of
+    your own, and a preview row.
+  - **Updates:** the version, Check for updates, and Check
+    automatically (once a day, on by default). A newer published release
+    is offered as its installer to download; nothing installs by itself.
+    Drafts are not seen until they are published.
+  - **About:** the app and its version, as an open source package by
+    Alkaline Software.
+- While open, tabflip has the Mac's usual app menu (Settings…, Hide,
+  Quit) and ⌘W closes Settings.
+
+New settings in `config.json`: `"menu_bar_icon"` (default `true`),
+`"check_updates"` (default `true`) and `"last_update_check"`.
+
+For developers:
+
+- `tabflip-core/src/update.rs` reads the newest published version from
+  the redirect GitHub's `releases/latest` answers with (via `curl`, so the
+  app carries no HTTPS client), with tests for the parsing and the
+  version order.
+- `tabflip-app` gains `theme.rs` (the palette, `themes/tabflip.json`),
+  `ui.rs` (pill buttons, key caps), and `assets.rs` (Tabler icons in
+  `assets/icons` over gpui-component's set).
+- `TABFLIP_SETTINGS=<section>` with `TABFLIP_SHOT_SETTINGS` shoots that
+  section.
+
 ## v0.1.2
 
 The list's size and highlight colour can be chosen in Settings.

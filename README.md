@@ -36,18 +36,31 @@ permission it asks for: no Screen Recording, and nothing leaves the Mac.
 
 ## Settings
 
-tabflip lives in the menu bar. **Settings…** there sets:
+tabflip lives in the menu bar and stays out of the Dock. It shows in the
+Dock only while Settings are open. Open Settings from the menu bar item,
+or by opening tabflip again from Finder or Spotlight (the way back if the
+menu bar item is hidden). There are four sections:
 
-- **Shortcut.** ⌘Tab by default, which turns off the Mac's own ⌘Tab
-  while tabflip runs (it comes back when tabflip quits). Click the
-  shortcut and press another: ⌥Tab, ⌃Tab, ⌘\`, any modifier and a key.
-- **List size.** Small, Medium or Large: rows, icons and text all grow
-  together.
-- **Highlight.** The colour of the selected row: one of the system's
-  colours (Blue, Purple, Pink, Red, Orange, Green, Teal, Graphite), which
-  follow light and dark mode, or any colour of your own as a hex code
-  (`#ff8800`). Text on a pale colour turns dark so it stays readable.
-- **Open at login.**
+- **General**
+  - **Shortcut.** ⌘Tab by default, which turns off the Mac's own ⌘Tab
+    while tabflip runs (it comes back when tabflip quits). Click the
+    shortcut and press another: ⌥Tab, ⌃Tab, ⌘\`, any modifier and a key.
+  - **Launch at login.**
+  - **Show in menu bar.**
+  - **Accessibility:** whether it is allowed, and the way to System
+    Settings if not.
+- **Customize**
+  - **Size.** Small, Medium or Large: rows, icons and text all grow
+    together.
+  - **Highlight.** The colour of the selected row: one of the system's
+    colours (Blue, Purple, Pink, Red, Orange, Green, Teal, Graphite),
+    which follow light and dark mode, or any colour of your own as a hex
+    code (`#ff8800`). Text on a pale colour turns dark so it stays
+    readable. A preview row shows both.
+- **Updates.** Checks GitHub for a newer release, by hand or once a day.
+  A newer version's installer is offered to download; nothing installs
+  by itself.
+- **About.**
 
 ## How it is built
 
