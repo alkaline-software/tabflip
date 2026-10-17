@@ -472,14 +472,17 @@ impl Controller {
         cx.notify();
     }
 
-    /// Allow pressed: the system's own question the first time in a
-    /// launch, which puts tabflip in the list and offers to open it;
-    /// after that, Privacy & Security itself, since the system asks only
-    /// once in an app's life.
+    /// Allow pressed: the first time in a launch, the entry the system
+    /// keeps for tabflip is forgotten (an entry made for a copy signed
+    /// otherwise shows as on and counts for nothing; `sys::forget_trust`)
+    /// and the system's own question asked, which puts tabflip in the
+    /// list afresh and offers to open it; after that, Privacy & Security
+    /// itself, since the system asks only once in an app's life.
     pub fn ask_trust(&mut self, cx: &mut Context<Self>) {
         if self.asked_trust {
             sys::open_url(sys::ACCESSIBILITY_SETTINGS_URL);
         } else {
+            sys::forget_trust();
             sys::ax::ask_trust();
             self.asked_trust = true;
         }

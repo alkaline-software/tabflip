@@ -24,6 +24,25 @@ pub fn log(line: std::fmt::Arguments) {
     }
 }
 
+/// The bundle this process runs from, by its identifier.
+pub fn bundle_id() -> Option<String> {
+    Some(objc2_foundation::NSBundle::mainBundle().bundleIdentifier()?.to_string())
+}
+
+/// The entry the system keeps for this app under Accessibility,
+/// forgotten (`tccutil reset`), so the next question makes a fresh one.
+/// The system binds a grant to the app's signature: an entry made for a
+/// copy signed otherwise (an earlier build) shows as on in System
+/// Settings and counts for nothing, and switching it off and on changes
+/// nothing; only removing it and granting again does, which is what the
+/// person had to do by hand before Allow did this. Nothing to forget is
+/// not an error.
+pub fn forget_trust() {
+    let Some(id) = bundle_id() else { return };
+    let out = std::process::Command::new("/usr/bin/tccutil").args(["reset", "Accessibility", &id]).output();
+    log(format_args!("forget_trust {id}: {:?}", out.map(|o| String::from_utf8_lossy(&o.stderr).trim().to_string())));
+}
+
 /// The settings page in System Settings where Accessibility is granted.
 pub const ACCESSIBILITY_SETTINGS_URL: &str = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 

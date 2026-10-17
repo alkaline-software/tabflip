@@ -361,9 +361,16 @@ lights, both fading in as the section changes. The window is 780 by
   from the system when the window opens or comes back, never written to
   the settings. The person may turn it off in Login Items.
 - **Accessibility** is asked when the person presses Allow, never
-  unasked. The system asks only once in an app's life, so a later press
-  opens Privacy & Security itself. The list is watched
-  (`sys::trust_changes`) and the switcher starts the moment it is given;
+  unasked. Allow first forgets the entry the system keeps for the app
+  (`sys::forget_trust`): the system binds a grant to the app's
+  signature, so an entry made for a copy signed otherwise (an earlier
+  build at the same path) shows as on in System Settings and counts for
+  nothing, and switching it off and on changes nothing. Then the
+  system's own question puts the app in the list afresh. The system
+  asks only once in an app's life, so a later press opens Privacy &
+  Security itself. The list is watched (`sys::trust_changes`) and the
+  switcher starts the moment it is given, by trying the tap, never by
+  asking `AXIsProcessTrusted`, which a running process reads once;
   Settings open on General at launch while it is missing, which is where
   the permission is.
 

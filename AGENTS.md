@@ -132,6 +132,11 @@ starts as a core test.
   was opened again (v0.2.0). A tap is tried only while that flag says
   yes or after Allow was pressed in this launch, since a tap made
   unasked has the system ask (`Controller::listen`, `listen_soon`).
+  **Allow first forgets the entry the system keeps** (`tccutil reset`,
+  `sys::forget_trust`): the system binds a grant to the app's
+  signature, so an entry made for a copy signed otherwise (an earlier
+  build) shows as on and counts for nothing, and only removing it and
+  granting again works (v0.2.2).
 
 ## Settings look
 

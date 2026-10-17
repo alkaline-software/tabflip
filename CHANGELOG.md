@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.3
+
+Allow works for someone who had an earlier tabflip.
+
+- **Allow forgets the old entry first.** macOS binds an Accessibility
+  grant to the app's signature. An entry made for an earlier copy of
+  tabflip, signed otherwise, showed as on in System Settings and
+  counted for nothing, and switching it off and on changed nothing;
+  only removing it with the minus button and granting again worked.
+  Allow now does that itself: it forgets tabflip's entry and asks the
+  system's question afresh, so one press and one switch is all it takes
+  whether or not an older tabflip was ever allowed.
+
 ## v0.2.2
 
 tabflip updates itself, and the disk image is laid out.
