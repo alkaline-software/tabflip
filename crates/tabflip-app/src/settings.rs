@@ -149,7 +149,7 @@ impl Global for Open {}
 /// section, `dark` and `light` the appearance, `untrusted` the
 /// permission drawn as not given (and `asked`, as after one Allow),
 /// `record` the shortcut's field waiting for keys, `newer` a newer
-/// version found.
+/// version found, `downloading` its download under way.
 pub fn go(step: &str, cx: &mut App) {
     let Some(Open(handle, settings)) = cx.try_global::<Open>().map(|o| Open(o.0, o.1.clone())) else { return };
     match step {
@@ -169,6 +169,12 @@ pub fn go(step: &str, cx: &mut App) {
         }),
         "newer" => controller::get(cx).update(cx, |c, cx| {
             c.update.available = Some("9.9.9".into());
+            cx.notify();
+        }),
+        "downloading" => controller::get(cx).update(cx, |c, cx| {
+            c.update.available = Some("9.9.9".into());
+            c.update.installing = true;
+            c.update.progress = Some((4_200_000, Some(7_000_000)));
             cx.notify();
         }),
         s if s.starts_with("language:") => controller::get(cx).update(cx, |c, cx| c.set_language(&s["language:".len()..], cx)),
@@ -595,27 +601,37 @@ impl Settings {
         )]
     }
 
-    /// Updates: the version, with what a check found and its button, and
-    /// whether to look once a day. tabflip does not install anything
-    /// itself: a newer version's installer is offered to download.
+    /// Updates: the version, with what a check found, and one button that
+    /// is Check for updates until a check finds something and Update to x
+    /// after, in the same place; whether to look once a day. The update
+    /// is fetched and put in place by tabflip itself, which then opens
+    /// again as the new version.
     fn updates(&mut self, cx: &mut Context<Self>) -> Vec<AnyElement> {
         let theme = cx.theme().clone();
         let c = self.controller.read(cx);
         let auto_on = c.config.check_updates;
         let u = &c.update;
-        let (checking, failed, answered, available) = (u.checking, u.failed, u.answered, u.available.clone());
         let current = update::current_version();
-        let said = if checking {
-            ""
-        } else if available.is_some() {
-            t("A newer version is out.")
-        } else if failed {
-            t("Could not reach GitHub.")
-        } else if answered {
-            t("Up to date.")
+        let said: String = if u.installing {
+            match u.progress {
+                Some((done, Some(total))) if total > 0 => tf("Downloading… {p}%", &[("p", &(done * 100 / total))]),
+                Some(_) => t("Downloading…").into(),
+                None => t("Installing… tabflip restarts by itself.").into(),
+            }
+        } else if !u.install_error.is_empty() {
+            tf("The update did not go through: {e}", &[("e", &u.install_error)])
+        } else if u.checking {
+            String::new()
+        } else if u.available.is_some() {
+            t("A newer version is out.").into()
+        } else if u.failed {
+            t("Could not reach GitHub.").into()
+        } else if u.answered {
+            t("Up to date.").into()
         } else {
-            ""
+            String::new()
         };
+        let (checking, installing, available) = (u.checking, u.installing, u.available.clone());
         let version_line: SharedString = if said.is_empty() { format!("tabflip {current}") } else { format!("tabflip {current} · {said}") }.into();
         let link = |id: &'static str, label: &'static str, url: String| {
             let (ink, hover) = (theme.muted_foreground, theme.primary);
@@ -631,12 +647,13 @@ impl Settings {
                 .child(label)
         };
         let version_note = v_flex().gap(px(1.)).child(div().child(version_line)).when_some(available.clone(), |d, v| d.child(link("update-notes", t("Release notes"), update::release_page(&v)))).into_any_element();
-        let button = match available.clone() {
-            Some(v) => pill("update-get", "icons/download.svg", tf("Download {v}", &[("v", &v)]), Press::Primary, false, &theme).w(UPDATE_W).on_click(move |_, window, cx| {
+        let button = match (available, installing) {
+            (Some(v), false) => pill("update-now", "icons/download.svg", tf("Update to {v}", &[("v", &v)]), Press::Primary, false, &theme).w(UPDATE_W).on_click(cx.listener(|this, _, window, cx| {
                 swallow_click(window, cx);
-                sys::open_url(&update::asset_url(&v));
-            }),
-            None => pill("update-check", "icons/redo-2.svg", if checking { t("Checking…") } else { t("Check for updates") }, Press::Quiet, checking, &theme).w(UPDATE_W).when(!checking, |d| {
+                this.controller.update(cx, |c, cx| c.install_update_now(cx));
+            })),
+            (_, true) => pill("update-busy", "icons/download.svg", t("Updating…"), Press::Quiet, true, &theme).w(UPDATE_W),
+            (None, false) => pill("update-check", "icons/redo-2.svg", if checking { t("Checking…") } else { t("Check for updates") }, Press::Quiet, checking, &theme).w(UPDATE_W).when(!checking, |d| {
                 d.on_click(cx.listener(|this, _, window, cx| {
                     swallow_click(window, cx);
                     this.controller.update(cx, |c, cx| c.check_updates(false, cx));
@@ -645,17 +662,14 @@ impl Settings {
         }
         .into_any_element();
         let auto = self.switch("update-auto", auto_on, Rc::new(|this, on, cx| this.controller.update(cx, |c, cx| c.set_check_updates(on, cx))), cx);
-        let downloaded = available.is_some().then(|| div().px(px(14.)).text_size(px(11.5)).text_color(theme.muted_foreground).child(t("Open the downloaded disk image and drag tabflip to Applications, over the old one.")).into_any_element());
-        let mut out = vec![group(
+        vec![group(
             None,
             vec![
                 line(t("Version"), Some(version_note), button, &theme),
                 line(t("Check automatically"), Some(div().child(t("Once a day. Nothing is installed without you.")).into_any_element()), auto, &theme),
             ],
             &theme,
-        )];
-        out.extend(downloaded);
-        out
+        )]
     }
 
     /// About: the title card, set as a film's first one is, and who makes

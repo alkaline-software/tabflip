@@ -1,12 +1,21 @@
-//! Whether a newer tabflip is out, and where to get it.
+//! Keeping tabflip current: whether a newer one is out, fetching its disk
+//! image, and putting it in place.
 //!
 //! Releases live on GitHub under stable asset names (WORKFLOW.md), so no
 //! API is needed: `releases/latest` answers with a redirect to the newest
 //! published release's tag, and its installer is at
 //! `releases/download/v<version>/<asset>`. Drafts are not seen until they
-//! are published. tabflip does not install anything itself: Settings
-//! offers the installer to download, and the person opens it.
+//! are published. `curl`, which every Mac has, does the talking, so the
+//! app carries no HTTPS client.
+//!
+//! Installing: the disk image is mounted, `tabflip.app` copied out beside
+//! the running bundle with `ditto` (which keeps the signature and the
+//! attributes), and swapped in with two renames. The old process keeps
+//! running from its unlinked files until the app quits, and the new app
+//! is opened once it has: never two at once.
 
+use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::Duration;
 
 pub const REPO: &str = "alkaline-software/tabflip";
@@ -88,6 +97,138 @@ pub fn latest() -> Result<Option<String>, String> {
         Some(location) => Ok(version_from_location(location)),
         None => Err(headers.lines().next().unwrap_or("no answer").trim().to_string()),
     }
+}
+
+/// Where the disk image is kept while it is fetched.
+pub fn downloads_dir() -> PathBuf {
+    dirs::cache_dir().unwrap_or_else(std::env::temp_dir).join("tabflip").join("updates")
+}
+
+/// How big the file at `url` is, as the server says after its redirects.
+fn content_length(url: &str) -> Option<u64> {
+    let out = Command::new("/usr/bin/curl").args(["-sIL", "--max-time", "20", url]).output().ok()?;
+    let headers = String::from_utf8_lossy(&out.stdout);
+    headers.lines().filter_map(|l| {
+        let (name, value) = l.split_once(':')?;
+        name.trim().eq_ignore_ascii_case("content-length").then(|| value.trim().parse::<u64>().ok()).flatten()
+    }).last()
+}
+
+/// Fetch this Mac's disk image for `version` into the cache, reporting
+/// bytes so far and the total when known. Answers the file. Blocks for
+/// the download: call it off the main thread.
+pub fn download(version: &str, progress: &dyn Fn(u64, Option<u64>)) -> Result<PathBuf, String> {
+    let dir = downloads_dir();
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let dest = dir.join(asset_name());
+    let tmp = dir.join(format!("{}.part", asset_name()));
+    let _ = std::fs::remove_file(&tmp);
+    let url = asset_url(version);
+    let total = content_length(&url);
+    progress(0, total);
+    let mut child = Command::new("/usr/bin/curl").args(["-sSL", "--fail", "--max-time", "900", "-o"]).arg(&tmp).arg(&url).stderr(std::process::Stdio::piped()).spawn().map_err(|e| e.to_string())?;
+    loop {
+        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+            if !status.success() {
+                let mut said = String::new();
+                if let Some(mut err) = child.stderr.take() {
+                    let _ = std::io::Read::read_to_string(&mut err, &mut said);
+                }
+                let _ = std::fs::remove_file(&tmp);
+                return Err(if said.trim().is_empty() { "the download stopped".into() } else { said.trim().to_string() });
+            }
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(150));
+        progress(std::fs::metadata(&tmp).map(|m| m.len()).unwrap_or(0), total);
+    }
+    let done = std::fs::metadata(&tmp).map(|m| m.len()).unwrap_or(0);
+    if let Some(t) = total {
+        if done != t {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(format!("the download ended early ({done} of {t} bytes)"));
+        }
+    }
+    progress(done, total);
+    std::fs::rename(&tmp, &dest).map_err(|e| e.to_string())?;
+    Ok(dest)
+}
+
+/// The `.app` the running binary lives in, if it is in one.
+pub fn bundle_path() -> Option<PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    exe.ancestors().find(|p| p.extension().is_some_and(|e| e == "app")).map(Path::to_path_buf)
+}
+
+/// Put the fetched disk image's app in place of the running bundle and
+/// have the new one open once this process has ended. On success the
+/// caller quits.
+pub fn install(dmg: &Path) -> Result<(), String> {
+    let bundle = bundle_path().ok_or("tabflip is not running from an app bundle here; open the disk image and drag tabflip to Applications instead")?;
+    install_into(dmg, &bundle, true)
+}
+
+/// `install` with the bundle to replace named, and whether the new app is
+/// opened once this process ends (a probe tries the swap on a throwaway
+/// bundle and opens nothing).
+pub fn install_into(dmg: &Path, bundle: &Path, open: bool) -> Result<(), String> {
+    let parent = bundle.parent().ok_or("the bundle has no parent folder")?;
+    let mount = downloads_dir().join("mnt");
+    let _ = Command::new("hdiutil").args(["detach", "-quiet"]).arg(&mount).output();
+    std::fs::create_dir_all(&mount).map_err(|e| e.to_string())?;
+    let out = Command::new("hdiutil").args(["attach", "-nobrowse", "-readonly", "-quiet", "-mountpoint"]).arg(&mount).arg(dmg).output().map_err(|e| e.to_string())?;
+    if !out.status.success() {
+        return Err(format!("the disk image would not mount: {}", String::from_utf8_lossy(&out.stderr).trim()));
+    }
+    let detach = || {
+        let _ = Command::new("hdiutil").args(["detach", "-quiet"]).arg(&mount).output();
+    };
+    let fresh = mount.join("tabflip.app");
+    if !fresh.is_dir() {
+        detach();
+        return Err("the disk image holds no tabflip.app".into());
+    }
+    let staged = parent.join("tabflip.app.update");
+    let old = parent.join("tabflip.app.old");
+    let _ = std::fs::remove_dir_all(&staged);
+    let _ = std::fs::remove_dir_all(&old);
+    let out = Command::new("ditto").arg(&fresh).arg(&staged).output().map_err(|e| e.to_string())?;
+    detach();
+    if !out.status.success() {
+        let _ = std::fs::remove_dir_all(&staged);
+        return Err(format!("could not copy the new app next to this one: {}", String::from_utf8_lossy(&out.stderr).trim()));
+    }
+    std::fs::rename(bundle, &old).map_err(|e| format!("could not move the current app aside ({}): {e}", bundle.display()))?;
+    if let Err(e) = std::fs::rename(&staged, bundle) {
+        let _ = std::fs::rename(&old, bundle);
+        let _ = std::fs::remove_dir_all(&staged);
+        return Err(format!("could not put the new app in place: {e}"));
+    }
+    let _ = std::fs::remove_dir_all(&old);
+    if open {
+        open_once_gone(std::process::id(), bundle).map_err(|e| format!("the new app is in place but did not start: {e}"))?;
+    }
+    Ok(())
+}
+
+/// Open `bundle` once the process `pid` has ended: a shell of its own
+/// that outlives this one and waits on the pid, not on a length of time.
+/// The new app must not start while the old one runs: two would each
+/// take the shortcut, and the old one gives the Mac its ⌘Tab back as it
+/// quits, after the new one took it.
+fn open_once_gone(pid: u32, bundle: &Path) -> std::io::Result<()> {
+    use std::os::unix::process::CommandExt;
+    use std::process::Stdio;
+    Command::new("/bin/sh")
+        .args(["-c", r#"while kill -0 "$1" 2>/dev/null; do sleep 0.2; done; exec /usr/bin/open "$2""#, "sh"])
+        .arg(pid.to_string())
+        .arg(bundle)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .process_group(0)
+        .spawn()
+        .map(|_| ())
 }
 
 #[cfg(test)]

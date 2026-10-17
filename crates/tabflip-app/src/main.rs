@@ -62,6 +62,13 @@ fn main() {
         list();
         return;
     }
+    // `tabflip --try-update <bundle>`: the newest release's disk image
+    // fetched and swapped into that bundle, a throwaway copy, with
+    // nothing opened: the update's steps short of the relaunch.
+    if let Some(bundle) = std::env::args().skip_while(|a| a != "--try-update").nth(1) {
+        try_update(&std::path::PathBuf::from(bundle));
+        return;
+    }
 
     let app = gpui_platform::application().with_assets(assets::Assets);
     // Opened again from Finder or Spotlight while running: Settings, which
@@ -279,6 +286,26 @@ fn shot(controller: Entity<controller::Controller>, path: std::path::PathBuf, cx
         });
     })
     .detach();
+}
+
+/// `tabflip --try-update <bundle>`: the update done to a throwaway bundle.
+fn try_update(bundle: &std::path::Path) {
+    use tabflip_core::update;
+    let latest = match update::latest() {
+        Ok(Some(v)) => v,
+        Ok(None) => return eprintln!("tabflip: nothing is published"),
+        Err(e) => return eprintln!("tabflip: {e}"),
+    };
+    println!("latest {latest}");
+    let file = match update::download(&latest, &|done, total| println!("  {done} of {}", total.map(|t| t.to_string()).unwrap_or("?".into()))) {
+        Ok(f) => f,
+        Err(e) => return eprintln!("tabflip: {e}"),
+    };
+    println!("downloaded {}", file.display());
+    match update::install_into(&file, bundle, false) {
+        Ok(()) => println!("swapped into {}", bundle.display()),
+        Err(e) => eprintln!("tabflip: {e}"),
+    }
 }
 
 /// `tabflip --list`: the windows in the switcher's order, one a line.

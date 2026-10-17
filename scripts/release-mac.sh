@@ -1,6 +1,7 @@
 #!/bin/zsh
 # The macOS release build: a Developer ID signature with the hardened
-# runtime, a disk image with the app and an Applications link, and (with
+# runtime, a disk image laid out by Finder (the app, an arrow, the
+# Applications link, over scripts/dmg/background.png), and (with
 # --notarize) notarization and a stapled ticket. Run on the machine of
 # whoever holds the Developer ID (WORKFLOW.md); CI runs it with
 # --identity - for its ad-hoc drafts.
@@ -60,16 +61,31 @@ else
 fi
 codesign --verify --deep --strict --verbose=2 "$APP"
 
+# The disk image. Finder lays the window out on a read-write image (the
+# layout lives in the volume's .DS_Store, and only Finder writes one Finder
+# will honour), then hdiutil compresses it read-only. The window is 660x420
+# points over scripts/dmg/background.png, which is that size at 2x.
+VOLNAME="tabflip v$VERSION"
 STAGE=dist/dmg-staging
-rm -rf "$STAGE" "$OUT"
-mkdir -p "$STAGE" "$(dirname "$OUT")"
+RW=dist/tabflip-rw.dmg
+detach_stale() {
+  local dev
+  for dev in $(hdiutil info | grep -F "/Volumes/$VOLNAME" | awk '{print $1}'); do
+    hdiutil detach "$dev" -force >/dev/null 2>&1 || true
+  done
+}
+detach_stale
+rm -rf "$STAGE" "$RW" "$OUT"
+mkdir -p "$STAGE/.background" "$(dirname "$OUT")"
 cp -R "$APP" "$STAGE/tabflip.app"
 ln -s /Applications "$STAGE/Applications"
+cp scripts/dmg/background.png "$STAGE/.background/background.png"
+mkdir -p "$STAGE/.fseventsd" && touch "$STAGE/.fseventsd/no_log"
 # hdiutil fails now and then with "Resource busy" on a machine that has
 # just built, so it is tried a few times.
 made=""
 for attempt in 1 2 3 4 5; do
-  if hdiutil create -volname "tabflip v$VERSION" -srcfolder "$STAGE" -ov -format UDZO -imagekey zlib-level=9 "$OUT"; then
+  if hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -ov -format UDRW "$RW"; then
     made=1
     break
   fi
@@ -77,8 +93,42 @@ for attempt in 1 2 3 4 5; do
   sleep $((attempt * 3))
 done
 [ -n "$made" ] || { echo "release-mac: could not create the disk image" >&2; exit 1; }
+ATTACHED=$(hdiutil attach -readwrite -noverify -noautoopen "$RW")
+DEVICE=$(echo "$ATTACHED" | awk '/^\/dev\// {print $1; exit}')
+osascript >/dev/null <<APPLESCRIPT
+tell application "Finder"
+  tell disk "$VOLNAME"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set the bounds of container window to {100, 100, 760, 520}
+    set opts to the icon view options of container window
+    set arrangement of opts to not arranged
+    set icon size of opts to 128
+    set text size of opts to 14
+    set background picture of opts to file ".background:background.png"
+    set position of item "tabflip.app" of container window to {165, 260}
+    set position of item "Applications" of container window to {495, 260}
+    -- Housekeeping items sit far outside the window for anyone showing hidden files.
+    repeat with n in {".background", ".fseventsd", ".Trashes", ".DS_Store"}
+      try
+        set position of item (n as text) of container window to {1400, 700}
+      end try
+    end repeat
+    close
+    open
+    update without registering applications
+    delay 2
+    close
+  end tell
+end tell
+APPLESCRIPT
+sync
+hdiutil detach "$DEVICE" -force >/dev/null
+hdiutil convert -quiet "$RW" -format UDZO -imagekey zlib-level=9 -ov -o "$OUT"
 # Left in dist/, the bundle is a second tabflip for Launchpad and Spotlight.
-rm -rf "$STAGE" "$APP" dist/.cargo-packager
+rm -rf "$STAGE" "$RW" "$APP" dist/.cargo-packager
 if [[ "$IDENTITY" != "-" ]]; then
   codesign --force --sign "$IDENTITY" "$OUT"
 fi

@@ -584,15 +584,6 @@
     "de": "Versionshinweise",
     "es": "Notas de la versión"
   },
-  "Download {v}": {
-    "zh-Hans": "下载 {v}",
-    "zh-Hant": "下載 {v}",
-    "ja": "{v} をダウンロード",
-    "ko": "{v} 다운로드",
-    "fr": "Télécharger {v}",
-    "de": "{v} laden",
-    "es": "Descargar {v}"
-  },
   "Once a day. Nothing is installed without you.": {
     "zh-Hans": "每天一次。不会自行安装任何内容。",
     "zh-Hant": "每天一次。不會自行安裝任何內容。",
@@ -602,15 +593,6 @@
     "de": "Einmal am Tag. Nichts wird ohne Sie installiert.",
     "es": "Una vez al día. Nada se instala sin ti."
   },
-  "Open the downloaded disk image and drag tabflip to Applications, over the old one.": {
-    "zh-Hans": "打开下载的磁盘映像，把 tabflip 拖到“应用程序”并替换旧版本。",
-    "zh-Hant": "打開下載的磁碟映像檔，把 tabflip 拖到「應用程式」並取代舊版本。",
-    "ja": "ダウンロードしたディスクイメージを開き、tabflip を「アプリケーション」の古いものの上にドラッグしてください。",
-    "ko": "다운로드한 디스크 이미지를 열고 tabflip을 응용 프로그램의 기존 항목 위로 드래그하세요.",
-    "fr": "Ouvrez l’image disque téléchargée et glissez tabflip dans Applications, par‑dessus l’ancien.",
-    "de": "Das geladene Image öffnen und tabflip über das alte nach Programme ziehen.",
-    "es": "Abre la imagen de disco descargada y arrastra tabflip a Aplicaciones, sobre el anterior."
-  },
   "Switch between windows, not apps · Version {v}": {
     "zh-Hans": "在窗口之间切换，而不是应用 · 版本 {v}",
     "zh-Hant": "在視窗之間切換，而不是 App · 版本 {v}",
@@ -619,5 +601,59 @@
     "fr": "Passer d’une fenêtre à l’autre, pas d’une app à l’autre · Version {v}",
     "de": "Zwischen Fenstern wechseln, nicht zwischen Apps · Version {v}",
     "es": "Cambia entre ventanas, no entre apps · Versión {v}"
+  },
+  "Update to {v}": {
+    "zh-Hans": "更新到 {v}",
+    "zh-Hant": "更新到 {v}",
+    "ja": "{v} にアップデート",
+    "ko": "{v}(으)로 업데이트",
+    "fr": "Passer à la {v}",
+    "de": "Auf {v} aktualisieren",
+    "es": "Actualizar a {v}"
+  },
+  "Updating…": {
+    "zh-Hans": "正在更新…",
+    "zh-Hant": "正在更新…",
+    "ja": "アップデート中…",
+    "ko": "업데이트 중…",
+    "fr": "Mise à jour…",
+    "de": "Aktualisiere …",
+    "es": "Actualizando…"
+  },
+  "Downloading…": {
+    "zh-Hans": "正在下载…",
+    "zh-Hant": "正在下載…",
+    "ja": "ダウンロード中…",
+    "ko": "다운로드 중…",
+    "fr": "Téléchargement…",
+    "de": "Lädt …",
+    "es": "Descargando…"
+  },
+  "Downloading… {p}%": {
+    "zh-Hans": "正在下载… {p}%",
+    "zh-Hant": "正在下載… {p}%",
+    "ja": "ダウンロード中… {p}%",
+    "ko": "다운로드 중… {p}%",
+    "fr": "Téléchargement… {p} %",
+    "de": "Lädt … {p} %",
+    "es": "Descargando… {p} %"
+  },
+  "The update did not go through: {e}": {
+    "zh-Hans": "更新未完成：{e}",
+    "zh-Hant": "更新未完成：{e}",
+    "ja": "アップデートできませんでした：{e}",
+    "ko": "업데이트하지 못했습니다: {e}",
+    "fr": "La mise à jour a échoué : {e}",
+    "de": "Das Update ist fehlgeschlagen: {e}",
+    "es": "La actualización no se completó: {e}"
+  },
+  "Installing… tabflip restarts by itself.": {
+    "zh-Hans": "正在安装… tabflip 会自动重新启动。",
+    "zh-Hant": "正在安裝… tabflip 會自動重新啟動。",
+    "ja": "インストール中… tabflip は自動で再起動します。",
+    "ko": "설치 중… tabflip가 자동으로 다시 시작됩니다.",
+    "fr": "Installation… tabflip redémarre tout seul.",
+    "de": "Installiere … tabflip startet von selbst neu.",
+    "es": "Instalando… tabflip se reiniciará solo."
   }
 }

@@ -55,6 +55,10 @@ The signer, in addition:
   (`xcrun notarytool store-credentials notarytool-profile` once, with the
   Apple ID, an app-specific password and team `XC2WL5WN7J`).
 
+For the disk-image background only: `uv` (which fetches Pillow itself)
+and the LXGW WenKai Medium font in `~/Library/Fonts`. The icon needs
+nothing beyond a Mac (`swift` ships with it).
+
 A developer without a Developer ID can still keep Accessibility granted
 across dev builds: `scripts/make-dev-cert.sh` once (AGENTS.md).
 
@@ -136,9 +140,9 @@ While CI runs, and from the tagged commit: an image built before the last
 fix is an image of other code, and `release-publish.sh` refuses one older
 than the tag's commit. Both architectures build on an Apple Silicon Mac.
 The script packages the bundle with cargo-packager, signs it with the
-Developer ID and the hardened runtime, makes the disk image with an
-Applications link, compresses it, signs it, submits it to the notary
-service, waits, staples and validates:
+Developer ID and the hardened runtime, lays the disk image out through
+Finder over `scripts/dmg/background.png`, compresses it, signs it,
+submits it to the notary service, waits, staples and validates:
 
 ```
 cargo build --release --locked -p tabflip-app
@@ -266,6 +270,27 @@ and the menu bar's template image into `assets/icons/` (`menubar.png` at
 36 px, `menubar-1x.png` at 18). Change the drawing, run the script,
 rebuild, commit the assets. `docs/design.md`, The app icon.
 
+**The disk-image background.** `scripts/dmg/background.png`, drawn by
+`scripts/dmg/background.py` (Pillow, LXGW WenKai Medium) on the window's
+page colour with the lavender: "Drag tabflip to Applications" and an
+arrow, 1320x840 at 2x for the 660x420 Finder window. Run the script only
+when the picture changes (`uv run --with pillow python3
+scripts/dmg/background.py`); the PNG is committed.
+
+**The layout.** `release-mac.sh` mounts a read-write image and has Finder
+set the window, the 128pt icons at 165 and 495, and the background, then
+converts to a compressed read-only image. Only Finder writes a `.DS_Store`
+Finder honours, so the layout is not generated offline. This works on the
+GitHub macOS runners too.
+
+**The update inside the app.** Updates in Settings fetches the newer
+version's image from the release's stable asset name
+(`update::download`), mounts it, copies `tabflip.app` beside the running
+bundle and swaps it in (`update::install`), then quits; the new app opens
+once the old process has ended. `tabflip --try-update <bundle>` does the
+same to a throwaway copy of the bundle and opens nothing, to try the
+steps short of the relaunch.
+
 ## When something fails
 
 Every failure met while cutting a release gets a line here once it is
@@ -281,6 +306,11 @@ so it is caught before the tag next time.
   `release-mac.sh` tries it five times and says why. If it still fails,
   re-run only that job, which keeps the tag and the images built here:
   `gh run rerun <run-id> --failed --repo alkaline-software/tabflip`.
+- **`release-mac.sh` stops with "Finder ... AppleEvent timed out
+  (-1712)"**: macOS asked whether the terminal may control Finder and
+  nobody answered. Allow it (System Settings, Privacy & Security,
+  Automation) and run the script again. Check the script's exit code and
+  that both images are in `dist/`.
 - **`release-mac.sh --notarize` stops with "No Keychain password item
   found for profile: notarytool-profile"**, run by an agent, while the
   same two commands work in the person's own terminal: the credential is

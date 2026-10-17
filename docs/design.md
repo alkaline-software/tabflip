@@ -295,9 +295,11 @@ lights, both fading in as the section changes. The window is 780 by
   segmented control), Highlight (the eight swatches), Your own colour (a
   field for a hex code, marked when it is not a colour), and Preview, a
   row as the list draws it at the chosen size and colour.
-- **Updates** is one card: Version, with what a check found and its
-  button, and Check automatically. Nothing is installed by itself: a
-  newer version's installer is offered to download.
+- **Updates** is one card: Version, with what a check found, and one
+  button that is Check for updates until a check finds something and
+  Update to x after, in the same place, saying how far the download is
+  as it goes; and Check automatically. Nothing is fetched or installed
+  without the press.
 - **About** is the title card, set as a film's first one is: "Alkaline
   Software presents", the icon, the name in the name's face and the
   accent, the version in small grey words; under it a sentence naming
@@ -308,7 +310,7 @@ lights, both fading in as the section changes. The window is 780 by
 
 - **A button** is `ui::pill`, in one of two kinds (`Press`): quiet, the
   default, for one of several and for the way out; primary, filled with
-  the accent, for the one thing a page waits on (Allow, Download x). On
+  the accent, for the one thing a page waits on (Allow, Update to x). On
   About it is the smaller pill.
 - **A switch** is for on or off, at a press anywhere on it.
 - **A segmented control** is for a choice among a few: a muted track,

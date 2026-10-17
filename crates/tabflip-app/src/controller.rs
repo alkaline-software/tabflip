@@ -56,8 +56,8 @@ pub struct Controller {
     pub update: UpdateView,
 }
 
-/// What Settings say of updates: a check under way, and what the last
-/// one found.
+/// What Settings say of updates: a check under way, what the last one
+/// found, and the download and install as they go.
 #[derive(Default)]
 pub struct UpdateView {
     pub checking: bool,
@@ -67,6 +67,18 @@ pub struct UpdateView {
     pub available: Option<String>,
     /// The last check could not reach GitHub.
     pub failed: bool,
+    pub installing: bool,
+    /// Bytes fetched and the total when known; None once installing.
+    pub progress: Option<(u64, Option<u64>)>,
+    pub install_error: String,
+}
+
+/// What the update thread says as it goes.
+enum UpdateEvent {
+    Downloading { done: u64, total: Option<u64> },
+    Installing,
+    Relaunch,
+    Failed(String),
 }
 
 pub struct Global_(pub Entity<Controller>);
@@ -541,6 +553,62 @@ impl Controller {
             });
         })
         .detach();
+    }
+
+    /// Fetch the newer version's disk image and put it in place, on a
+    /// thread, reporting as it goes. Ends in a relaunch or a failure.
+    pub fn install_update_now(&mut self, cx: &mut Context<Self>) {
+        let Some(version) = self.update.available.clone() else { return };
+        if self.update.installing {
+            return;
+        }
+        self.update.installing = true;
+        self.update.install_error.clear();
+        self.update.progress = Some((0, None));
+        let (tx, mut rx) = futures::channel::mpsc::unbounded();
+        std::thread::spawn(move || {
+            let progress = |done: u64, total: Option<u64>| {
+                let _ = tx.unbounded_send(UpdateEvent::Downloading { done, total });
+            };
+            let file = match update::download(&version, &progress) {
+                Ok(f) => f,
+                Err(e) => {
+                    let _ = tx.unbounded_send(UpdateEvent::Failed(e));
+                    return;
+                }
+            };
+            let _ = tx.unbounded_send(UpdateEvent::Installing);
+            let _ = tx.unbounded_send(match update::install(&file) {
+                Ok(()) => UpdateEvent::Relaunch,
+                Err(e) => UpdateEvent::Failed(e),
+            });
+        });
+        cx.spawn(async move |this, cx| {
+            use futures::StreamExt as _;
+            while let Some(ev) = rx.next().await {
+                if this.update(cx, |this, cx| this.on_update(ev, cx)).is_err() {
+                    break;
+                }
+            }
+        })
+        .detach();
+        cx.notify();
+    }
+
+    fn on_update(&mut self, ev: UpdateEvent, cx: &mut Context<Self>) {
+        match ev {
+            UpdateEvent::Downloading { done, total } => self.update.progress = Some((done, total)),
+            UpdateEvent::Installing => self.update.progress = None,
+            // The new app is in place and starts once this one has left.
+            UpdateEvent::Relaunch => cx.quit(),
+            UpdateEvent::Failed(e) => {
+                sys::log(format_args!("update: {e}"));
+                self.update.installing = false;
+                self.update.progress = None;
+                self.update.install_error = e;
+            }
+        }
+        cx.notify();
     }
 
     fn save(&self) {

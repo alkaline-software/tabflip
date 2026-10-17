@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.2.2
+
+tabflip updates itself, and the disk image is laid out.
+
+- **Update to x.** The button in Updates fetches the newer version,
+  puts it in place and opens it again as the new tabflip, saying how far
+  the download is as it goes. Nothing is fetched or installed without
+  the press.
+- **The disk image** opens on "Drag tabflip to Applications", with the
+  app and the Applications folder side by side under a lavender arrow.
+
+For developers:
+
+- `update::download` and `update::install` in the core, `tabflip
+  --try-update <bundle>` to try them on a throwaway bundle.
+- `scripts/dmg/background.py` draws the background; `release-mac.sh`
+  lays the image out through Finder, as Kotoba's does.
+
 ## v0.2.1
 
 Accessibility given while tabflip runs is seen at once.

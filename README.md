@@ -63,8 +63,8 @@ if the menu bar item is hidden). There are four sections:
     code (`#ff8800`). Text on a pale colour turns dark so it stays
     readable. A preview row shows both.
 - **Updates.** Checks GitHub for a newer release, by hand or once a day.
-  A newer version's installer is offered to download; nothing installs
-  by itself.
+  A newer version is installed at a press, and tabflip opens again as
+  it; nothing is fetched or installed without that press.
 - **About.**
 
 ## How it is built
