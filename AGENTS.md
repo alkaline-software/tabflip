@@ -69,6 +69,12 @@ starts as a core test.
   (before anything can fail), at quit, on SIGHUP/SIGINT/SIGTERM and in
   the panic hook. A kill -9 is covered by the next launch. It is only
   ever turned off while the shortcut is exactly ⌘Tab.
+- **One tabflip runs at a time.** A tabflip opened while another runs,
+  the release or the build, asks it to quit and makes it a few seconds
+  on (`sys::end_other_tabflips`): two would each take the shortcut. The
+  one quitting gives the system its ⌘Tab back, so the one staying
+  applies its shortcut again once the other is gone. A probe copy, with
+  its own `TABFLIP_HOME`, ends none.
 - **The event tap callback never does slow work.** It matches the event,
   sends a `tap::Key` down a channel and returns. No Accessibility call, no
   allocation beyond the send. A slow tap gets disabled by the system
@@ -120,7 +126,12 @@ starts as a core test.
   Settings (`on_reopen`).
 - Accessibility is asked by the person's press on Allow, never unasked
   at launch; the list is watched (`sys::trust_changes`) and the tap
-  starts the moment it is given.
+  starts the moment it is given. **Whether it is given is whether the
+  tap can be made**, never `AXIsProcessTrusted` alone: a running process
+  reads that once, and after a grant it went on saying no until the app
+  was opened again (v0.2.0). A tap is tried only while that flag says
+  yes or after Allow was pressed in this launch, since a tap made
+  unasked has the system ask (`Controller::listen`, `listen_soon`).
 
 ## Settings look
 

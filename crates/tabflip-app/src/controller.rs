@@ -112,8 +112,16 @@ impl Controller {
 
     /// Start seeing the keyboard, once Accessibility allows it. Keys are
     /// handled as they come, for the app's life.
+    ///
+    /// Whether it is allowed is whether the tap can be made, never
+    /// `AXIsProcessTrusted` alone: a running process reads that once, and
+    /// after a grant in System Settings it went on saying no until the
+    /// app was opened again. A tap made while the app is not in the list
+    /// has the system ask, so one is tried only while that flag says yes
+    /// or after Allow was pressed in this launch (the system has asked
+    /// then, and a refused tap asks nothing more).
     pub fn listen(&mut self, cx: &mut Context<Self>) {
-        if self.listening || !sys::ax::trusted() {
+        if self.listening || !(self.asked_trust || sys::ax::trusted()) {
             return;
         }
         let Some(mut keys) = sys::tap::start() else {
@@ -137,7 +145,7 @@ impl Controller {
     }
 
     /// The system's ⌘Tab off while it is the shortcut, on otherwise.
-    fn apply_shortcut(&mut self) {
+    pub fn apply_shortcut(&mut self) {
         let s = self.config.shortcut();
         sys::tap::set_shortcut(s);
         let ok = sys::private::set_system_switcher(!s.is_command_tab());
@@ -463,7 +471,32 @@ impl Controller {
             sys::ax::ask_trust();
             self.asked_trust = true;
         }
+        self.listen_soon(cx);
         cx.notify();
+    }
+
+    /// The tap tried again over the next few seconds: the system's notice
+    /// of a change to Accessibility's list comes a moment before the
+    /// change is written, and it can refuse a new tap for a moment after
+    /// a grant. Run at each notice, at Allow, and when Settings come back
+    /// in front.
+    pub fn listen_soon(&mut self, cx: &mut Context<Self>) {
+        if self.listening {
+            return;
+        }
+        cx.spawn(async move |this, cx| {
+            for _ in 0..20 {
+                cx.background_executor().timer(Duration::from_millis(250)).await;
+                let done = this.update(cx, |c, cx| {
+                    c.listen(cx);
+                    c.listening
+                });
+                if done.unwrap_or(true) {
+                    return;
+                }
+            }
+        })
+        .detach();
     }
 
     pub fn set_check_updates(&mut self, on: bool, cx: &mut Context<Self>) {

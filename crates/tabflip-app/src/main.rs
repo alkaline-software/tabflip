@@ -75,9 +75,27 @@ fn main() {
         gpui_component::init(cx);
         i18n::set(&i18n::chosen());
         sys::stay_in_menu_bar();
+        // One tabflip at a time, the one opened last: two would each take
+        // the shortcut. A probe copy, with a home of its own, leaves the
+        // others be.
+        let ended_others = std::env::var_os("TABFLIP_HOME").is_none() && sys::end_other_tabflips();
         theme::install(cx);
         let controller = cx.new(|_| controller::Controller::new());
         cx.set_global(controller::Global_(controller.clone()));
+        if ended_others {
+            // A copy that quits gives the system its ⌘Tab back, after this
+            // one may have taken it: taken again once they are gone.
+            let c = controller.clone();
+            cx.spawn(async move |cx| {
+                cx.background_executor().timer(std::time::Duration::from_millis(3500)).await;
+                let _ = c.update(cx, |c, _| {
+                    if c.listening {
+                        c.apply_shortcut();
+                    }
+                });
+            })
+            .detach();
+        }
         panel::install(cx);
         settings::watch_close(cx);
 
@@ -205,16 +223,11 @@ fn main() {
             cx.spawn(async move |cx| {
                 use futures::StreamExt as _;
                 while changes.next().await.is_some() {
-                    // The list's notice comes a moment before the answer
-                    // to "am I trusted" changes.
-                    for _ in 0..10 {
-                        cx.background_executor().timer(std::time::Duration::from_millis(250)).await;
-                        if c.update(cx, |c, cx| {
-                            c.listen(cx);
-                            c.listening
-                        }) {
-                            return;
-                        }
+                    if c.update(cx, |c, cx| {
+                        c.listen_soon(cx);
+                        c.listening
+                    }) {
+                        return;
                     }
                 }
             })

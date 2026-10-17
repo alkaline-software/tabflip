@@ -109,10 +109,12 @@ impl Settings {
             cx.notify();
         });
         // Coming back to the window reads again what may have changed in
-        // System Settings meanwhile.
+        // System Settings meanwhile: Login Items, and Accessibility, by
+        // trying the tap.
         let back = cx.observe_window_activation(window, |this, window, cx| {
             if window.is_window_active() {
                 this.login = sys::launches_at_login();
+                this.controller.update(cx, |c, cx| c.listen_soon(cx));
                 cx.notify();
             }
         });

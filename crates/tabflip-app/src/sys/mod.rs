@@ -111,6 +111,43 @@ pub fn screen_height() -> f64 {
         .unwrap_or(800.)
 }
 
+/// Every other tabflip running as an app, the release's or the build's,
+/// asked to quit, and made to if it is still there a few seconds on: two
+/// would each take the shortcut. The one opened last stays. Whether any
+/// was found is returned: a quitting copy gives the system its ⌘Tab back
+/// (`on_app_quit`), after this one may have taken it, so the caller
+/// applies the shortcut again once they are gone.
+pub fn end_other_tabflips() -> bool {
+    use objc2_app_kit::NSRunningApplication;
+    use objc2_foundation::NSString;
+    let me = std::process::id() as i32;
+    let mut others = Vec::new();
+    for id in ["com.alkalinesoftware.tabflip", "com.alkalinesoftware.tabflip.dev"] {
+        for app in NSRunningApplication::runningApplicationsWithBundleIdentifier(&NSString::from_str(id)).iter() {
+            let pid = app.processIdentifier();
+            if pid != me && pid > 0 {
+                app.terminate();
+                others.push(pid);
+            }
+        }
+    }
+    if others.is_empty() {
+        return false;
+    }
+    log(format_args!("ending other tabflips: {others:?}"));
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        for pid in others {
+            if let Some(app) = NSRunningApplication::runningApplicationWithProcessIdentifier(pid) {
+                if !app.isTerminated() {
+                    app.forceTerminate();
+                }
+            }
+        }
+    });
+    true
+}
+
 /// No Dock icon and no menu at the screen's top: an app of the menu bar.
 /// gpui makes every app a regular one as it starts, over the bundle's
 /// `LSUIElement`, so this is said again after it.

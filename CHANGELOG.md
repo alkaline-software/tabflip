@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.1
+
+Accessibility given while tabflip runs is seen at once.
+
+- **A grant is noticed without a relaunch.** v0.2.0 asked the system
+  once whether it was trusted and kept the answer, so Allow followed by
+  the switch in System Settings left the row on "Open Settings" and
+  ⌘Tab with the Mac until tabflip was opened again. The tap is now tried
+  itself, for a few seconds after Allow, after each change to
+  Accessibility's list, and whenever Settings come back in front, and it
+  starts the moment the grant is written.
+- **One tabflip at a time.** A tabflip opened while another runs asks
+  it to quit, so two never both take the shortcut; the one opened last
+  stays.
+
 ## v0.2.0
 
 tabflip takes the look of Alkaline Software's family, speaks eight
