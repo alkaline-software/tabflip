@@ -1,7 +1,8 @@
 //! The keyboard, seen in every app: an event tap on the main run loop.
 //!
 //! The tap only matches and forwards; anything slow happens in the app.
-//! It keeps from the app in front the shortcut's key, and while the
+//! It keeps from the app in front the shortcut's key (and ` with the
+//! shortcut's modifiers, which goes back, as ⇧ does), and while the
 //! switcher is open every key, so Tab, the arrows and Esc move through the
 //! list and do nothing else. Modifiers always pass, so every app agrees on
 //! what is held.
@@ -107,8 +108,11 @@ extern "C" fn seen(_proxy: Ref, kind: u32, event: Ref, info: Ref) -> Ref {
                 send(info, Key::Recorded { flags: mods, key: code });
                 return std::ptr::null_mut();
             }
-            let is_trigger = code == key && hold != 0 && mods & !shortcut::SHIFT == hold;
-            let back = mods & shortcut::SHIFT != 0;
+            // ` with the held modifiers is the shortcut backwards, unless
+            // the shortcut's own key is `.
+            let grave = code == shortcut::GRAVE && key != shortcut::GRAVE;
+            let is_trigger = (code == key || grave) && hold != 0 && mods & !shortcut::SHIFT == hold;
+            let back = mods & shortcut::SHIFT != 0 || grave;
             // Open with the modifiers no longer held: their release was
             // missed (the tap was off for a moment). Pick, and let the key
             // through, rather than keep every key from every app.
@@ -126,7 +130,7 @@ extern "C" fn seen(_proxy: Ref, kind: u32, event: Ref, info: Ref) -> Ref {
                 return std::ptr::null_mut();
             }
             let said = match code {
-                _ if code == key => Some(Key::Trigger { back }),
+                _ if code == key || grave => Some(Key::Trigger { back }),
                 shortcut::ESCAPE => Some(Key::Escape),
                 shortcut::RETURN | shortcut::KEYPAD_ENTER => Some(Key::Release),
                 shortcut::UP | shortcut::LEFT => Some(Key::Step(-1)),

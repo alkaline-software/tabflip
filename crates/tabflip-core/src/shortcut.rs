@@ -17,6 +17,9 @@ pub const ALT: u64 = 0x8_0000;
 pub const MODS: u64 = CMD | SHIFT | CTRL | ALT;
 
 pub const TAB: u16 = 48;
+/// ` with the held modifiers goes back through the list, as ⇧ and the
+/// shortcut's key do: the Mac's own ⌘` cycles windows, so the hand knows it.
+pub const GRAVE: u16 = 50;
 pub const RETURN: u16 = 36;
 pub const KEYPAD_ENTER: u16 = 76;
 pub const ESCAPE: u16 = 53;
@@ -49,14 +52,24 @@ pub enum Invalid {
     UnknownKey,
 }
 
-impl fmt::Display for Invalid {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
+impl Invalid {
+    pub const ALL: [Invalid; 4] = [Invalid::NoModifier, Invalid::Shift, Invalid::Reserved, Invalid::UnknownKey];
+
+    /// What the window says of it, in English: the key of its other
+    /// languages.
+    pub fn said(&self) -> &'static str {
+        match self {
             Invalid::NoModifier => "Hold ⌘, ⌥ or ⌃ with the key",
             Invalid::Shift => "⇧ is for going back; leave it out",
             Invalid::Reserved => "That key moves through the list",
             Invalid::UnknownKey => "That key can't be used",
-        })
+        }
+    }
+}
+
+impl fmt::Display for Invalid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.said())
     }
 }
 
@@ -133,7 +146,7 @@ const KEYS: &[(u16, &str)] = &[
     (40, "k"), (37, "l"), (46, "m"), (45, "n"), (31, "o"), (35, "p"), (12, "q"), (15, "r"), (1, "s"), (17, "t"),
     (32, "u"), (9, "v"), (13, "w"), (7, "x"), (16, "y"), (6, "z"),
     (29, "0"), (18, "1"), (19, "2"), (20, "3"), (21, "4"), (23, "5"), (22, "6"), (26, "7"), (28, "8"), (25, "9"),
-    (50, "`"), (27, "-"), (24, "="), (33, "["), (30, "]"), (42, "\\"), (41, ";"), (39, "'"), (43, ","), (47, "."), (44, "/"),
+    (GRAVE, "`"), (27, "-"), (24, "="), (33, "["), (30, "]"), (42, "\\"), (41, ";"), (39, "'"), (43, ","), (47, "."), (44, "/"),
     (TAB, "tab"), (49, "space"), (51, "backspace"), (ESCAPE, "escape"), (RETURN, "enter"),
     (LEFT, "left"), (RIGHT, "right"), (DOWN, "down"), (UP, "up"),
     (122, "f1"), (120, "f2"), (99, "f3"), (118, "f4"), (96, "f5"), (97, "f6"),

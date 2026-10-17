@@ -32,7 +32,10 @@ gpui-base = { git = "https://github.com/longbridge/gpui-component", rev = "fd3bc
 objc2 = "0.6"
 block2 = "0.6"
 objc2-app-kit = { version = "0.3", features = ["NSApplication", "NSResponder", "NSView", "NSWindow", "NSPanel", "NSScreen", "NSEvent", "NSImage", "NSImageRep", "NSBitmapImageRep", "NSGraphicsContext", "NSRunningApplication", "NSWorkspace", "NSStatusBar", "NSStatusItem", "NSStatusBarButton", "NSButton", "NSControl", "NSMenu", "NSMenuItem", "NSColor", "NSAppearance"] }
-objc2-foundation = { version = "0.3", features = ["NSString", "NSArray", "NSDictionary", "NSData", "NSURL", "NSNotification", "NSGeometry", "NSValue", "NSError"] }
+objc2-foundation = { version = "0.3", features = ["NSString", "NSArray", "NSDictionary", "NSData", "NSURL", "NSNotification", "NSGeometry", "NSValue", "NSError", "NSUserDefaults", "NSBundle", "NSLocale"] }
+# The menu's icons, drawn from the same SVGs the window draws, by the
+# resvg gpui already builds.
+resvg = "0.46"
 objc2-service-management = { version = "0.3", features = ["SMAppService"] }
 raw-window-handle = "0.6"
 

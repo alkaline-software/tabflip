@@ -45,6 +45,12 @@ pub struct Controller {
     pub record_error: Option<Invalid>,
     /// The system's ⌘Tab could not be switched off.
     pub system_switcher_stuck: bool,
+    /// Allow was pressed in this launch: the system asks only once in an
+    /// app's life, so the next press opens Privacy & Security itself.
+    pub asked_trust: bool,
+    /// How many times the language changed while running: the window
+    /// fades into each new one.
+    pub lang_serial: u32,
     /// The section Settings open on: where they were left.
     pub section: &'static str,
     pub update: UpdateView,
@@ -89,6 +95,8 @@ impl Controller {
             recording: false,
             record_error: None,
             system_switcher_stuck: false,
+            asked_trust: false,
+            lang_serial: 0,
             section: "general",
             update: UpdateView::default(),
         }
@@ -340,6 +348,12 @@ impl Controller {
         self.effect(e, cx);
     }
 
+    /// `TABFLIP_DEMO_LOOP`: a row down, as Tab does.
+    pub fn demo_step(&mut self, cx: &mut Context<Self>) {
+        let e = self.switcher.step(1);
+        self.effect(e, cx);
+    }
+
     pub fn demo_close(&mut self, cx: &mut Context<Self>) {
         let e = self.switcher.cancel();
         self.effect(e, cx);
@@ -409,8 +423,46 @@ impl Controller {
     /// Show or hide the item in the menu bar.
     pub fn set_menu_bar_icon(&mut self, on: bool, cx: &mut Context<Self>) {
         self.config.menu_bar_icon = on;
-        sys::status_item::set_visible(on);
+        sys::status_item::set(self.config.menu_bar_swap, on);
         self.save();
+        cx.notify();
+    }
+
+    /// The item's clicks swapped: the menu on a left click, Settings on
+    /// a right one.
+    pub fn set_menu_bar_swap(&mut self, on: bool, cx: &mut Context<Self>) {
+        self.config.menu_bar_swap = on;
+        sys::status_item::set(on, self.config.menu_bar_icon);
+        self.save();
+        cx.notify();
+    }
+
+    /// The window's language set to `choice` (`system`, or a code of
+    /// `i18n::CHOICES`), at once: the words, the menu bar's menu, the
+    /// app's menu, and the app's own language in the system's eyes.
+    pub fn set_language(&mut self, choice: &str, cx: &mut Context<Self>) {
+        let choice = if choice == "system" || crate::i18n::CHOICES.iter().any(|(c, _, _)| *c == choice) { choice.to_string() } else { "system".to_string() };
+        sys::set_own_language((choice != "system").then_some(choice.as_str()));
+        crate::i18n::set(&choice);
+        sys::status_item::retitle(&crate::menu_lines());
+        cx.set_menus(crate::app_menus());
+        self.config.language = choice;
+        self.lang_serial += 1;
+        self.save();
+        cx.notify();
+    }
+
+    /// Allow pressed: the system's own question the first time in a
+    /// launch, which puts tabflip in the list and offers to open it;
+    /// after that, Privacy & Security itself, since the system asks only
+    /// once in an app's life.
+    pub fn ask_trust(&mut self, cx: &mut Context<Self>) {
+        if self.asked_trust {
+            sys::open_url(sys::ACCESSIBILITY_SETTINGS_URL);
+        } else {
+            sys::ax::ask_trust();
+            self.asked_trust = true;
+        }
         cx.notify();
     }
 

@@ -15,8 +15,8 @@ app's icon and a word or two for what is in it.
 ```
 
 Let go of ⌘ and that window comes to the front. A quick ⌘Tab goes straight
-to the window you used last, with no list at all. Esc cancels; the arrows
-and the pointer work too.
+to the window you used last, with no list at all. ⌘⇧Tab or ⌘\` moves up;
+Esc cancels; the arrows and the pointer work too.
 
 ## Install
 
@@ -37,18 +37,23 @@ permission it asks for: no Screen Recording, and nothing leaves the Mac.
 ## Settings
 
 tabflip lives in the menu bar and stays out of the Dock. It shows in the
-Dock only while Settings are open. Open Settings from the menu bar item,
-or by opening tabflip again from Finder or Spotlight (the way back if the
-menu bar item is hidden). There are four sections:
+Dock only while Settings are open. A click on the menu bar item opens
+Settings; a right click shows a menu of the sections and Quit. Opening
+tabflip again from Finder or Spotlight opens Settings too (the way back
+if the menu bar item is hidden). There are four sections:
 
 - **General**
   - **Shortcut.** ⌘Tab by default, which turns off the Mac's own ⌘Tab
     while tabflip runs (it comes back when tabflip quits). Click the
     shortcut and press another: ⌥Tab, ⌃Tab, ⌘\`, any modifier and a key.
   - **Launch at login.**
-  - **Show in menu bar.**
-  - **Accessibility:** whether it is allowed, and the way to System
-    Settings if not.
+  - **Show in menu bar**, and **Swap clicks** (the menu on a left click,
+    Settings on a right one).
+  - **Accessibility:** whether it is allowed, and Allow if not.
+  - **Language**, at the top right: the system's, or English, Chinese
+    (Simplified or Traditional), Japanese, Korean, French, German or
+    Spanish. Only Settings change language; the list shows each window's
+    own title.
 - **Customize**
   - **Size.** Small, Medium or Large: rows, icons and text all grow
     together.
@@ -70,14 +75,16 @@ Rust, with [GPUI](https://www.gpui.rs) (the Zed editor's UI framework) and
 
 ```
 crates/tabflip-core   the shortcut, the labels, the order, the switcher's states; tested anywhere
-crates/tabflip-app    the panel, Settings, and every macOS call (src/sys/)
+crates/tabflip-app    the panel, Settings, the languages, and every macOS call (src/sys/)
 scripts/              the dev bundle, the icon, releases
+docs/design.md        the design standard: palette, icon, window, list, motion, languages
 ```
 
 ## Development
 
 ```
 cargo test -p tabflip-core
+cargo test -p tabflip-app       the languages' table
 scripts/dev-app.sh              build, bundle, sign and open the dev app
 target/debug/tabflip --list     the windows as the switcher sees them
 ```

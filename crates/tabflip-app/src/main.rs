@@ -7,6 +7,7 @@
 
 mod assets;
 mod controller;
+mod i18n;
 mod panel;
 mod settings;
 mod sys;
@@ -15,24 +16,38 @@ mod ui;
 
 use gpui::*;
 
-actions!(tabflip, [Quit, Hide, HideOthers, ShowAll, CloseWindow, OpenSettings]);
+actions!(tabflip, [Quit, Hide, HideOthers, ShowAll, CloseWindow, OpenSettings, Escape]);
 
 /// The app's menu at the screen's top, there while Settings are open and
-/// tabflip is in the Dock: the Mac's own choices for an app.
-fn app_menus() -> Vec<Menu> {
+/// tabflip is in the Dock: the Mac's own choices for an app, in the
+/// language in use.
+pub fn app_menus() -> Vec<Menu> {
+    let t = i18n::t;
     vec![Menu {
         name: "tabflip".into(),
         disabled: false,
         items: vec![
-            MenuItem::action("Settings…", OpenSettings),
+            MenuItem::action(t("Settings…"), OpenSettings),
             MenuItem::separator(),
-            MenuItem::action("Hide tabflip", Hide),
-            MenuItem::action("Hide Others", HideOthers),
-            MenuItem::action("Show All", ShowAll),
+            MenuItem::action(t("Hide tabflip"), Hide),
+            MenuItem::action(t("Hide Others"), HideOthers),
+            MenuItem::action(t("Show All"), ShowAll),
             MenuItem::separator(),
-            MenuItem::action("Quit tabflip", Quit),
+            MenuItem::action(t("Quit tabflip"), Quit),
         ],
     }]
+}
+
+/// The menu bar item's menu: each section of Settings with the rail's
+/// icon, a line before Updates, and Quit under a line of its own.
+pub fn menu_lines() -> Vec<sys::status_item::MenuLine> {
+    let icon = |path: &str| match assets::Assets.load(path) {
+        Ok(Some(std::borrow::Cow::Borrowed(bytes))) => bytes,
+        _ => &[],
+    };
+    let mut lines: Vec<sys::status_item::MenuLine> = settings::SECTIONS.iter().map(|&(key, title, path)| sys::status_item::MenuLine { key, title: i18n::t(title), icon: icon(path), keys: "", gap: key == "updates" }).collect();
+    lines.push(sys::status_item::MenuLine { key: "quit", title: i18n::t("Quit tabflip"), icon: icon("icons/logout.svg"), keys: "q", gap: true });
+    lines
 }
 
 fn main() {
@@ -58,6 +73,7 @@ fn main() {
     });
     app.run(|cx: &mut App| {
         gpui_component::init(cx);
+        i18n::set(&i18n::chosen());
         sys::stay_in_menu_bar();
         theme::install(cx);
         let controller = cx.new(|_| controller::Controller::new());
@@ -77,6 +93,7 @@ fn main() {
             KeyBinding::new("cmd-alt-h", HideOthers, None),
             KeyBinding::new("cmd-w", CloseWindow, None),
             KeyBinding::new("cmd-,", OpenSettings, None),
+            KeyBinding::new("escape", Escape, Some(settings::KEY_CONTEXT)),
         ]);
         cx.set_menus(app_menus());
 
@@ -86,13 +103,20 @@ fn main() {
         })
         .detach();
 
-        if let Some(mut menu) = sys::status_item::install(controller.read(cx).config.menu_bar_icon) {
+        // The menu bar item: one click opens Settings, the other shows
+        // its menu, of the sections and Quit.
+        let (swap, shown) = {
+            let c = controller.read(cx);
+            (c.config.menu_bar_swap, c.config.menu_bar_icon)
+        };
+        if let Some(mut picks) = sys::status_item::install(&menu_lines(), swap, shown) {
             cx.spawn(async move |cx| {
                 use futures::StreamExt as _;
-                while let Some(command) = menu.next().await {
-                    cx.update(|cx| match command {
-                        sys::status_item::Command::Settings => settings::show(None, cx),
-                        sys::status_item::Command::Quit => cx.quit(),
+                while let Some(pick) = picks.next().await {
+                    cx.update(|cx| match pick {
+                        sys::status_item::MenuPick::Settings => settings::show(None, cx),
+                        sys::status_item::MenuPick::Line("quit") => cx.quit(),
+                        sys::status_item::MenuPick::Line(section) => settings::show(Some(section), cx),
                     });
                 }
             })
@@ -111,11 +135,18 @@ fn main() {
         .detach();
 
         if let Some(path) = std::env::var_os("TABFLIP_SHOT_SETTINGS") {
-            // `TABFLIP_SETTINGS=<section>` picks the section shot.
+            // `TABFLIP_SETTINGS=<section>` picks the section shot, and
+            // `TABFLIP_GO="step;step"` plays steps first (`settings::go`),
+            // a moment apart.
             let section = std::env::var("TABFLIP_SETTINGS").ok().and_then(|s| settings::SECTIONS.iter().find(|(k, _, _)| *k == s).map(|(k, _, _)| *k));
+            let steps: Vec<String> = std::env::var("TABFLIP_GO").map(|s| s.split(';').filter(|s| !s.is_empty()).map(str::to_string).collect()).unwrap_or_default();
             controller.update(cx, |c, _| c.listening = sys::ax::trusted());
             settings::show(section, cx);
             cx.spawn(async move |cx| {
+                for step in steps {
+                    cx.background_executor().timer(std::time::Duration::from_millis(400)).await;
+                    cx.update(|cx| settings::go(&step, cx));
+                }
                 cx.background_executor().timer(std::time::Duration::from_millis(800)).await;
                 cx.update(|cx| {
                     settings::shoot(&std::path::PathBuf::from(path), cx);
@@ -132,6 +163,11 @@ fn main() {
                     cx.background_executor().timer(std::time::Duration::from_secs(3)).await;
                     sys::log(format_args!("demo {n}: show"));
                     cx.update(|cx| controller.update(cx, |c, cx| c.demo(cx)));
+                    // Two rows down, a moment apart, as Tab does: the slide.
+                    for _ in 0..2 {
+                        cx.background_executor().timer(std::time::Duration::from_millis(400)).await;
+                        cx.update(|cx| controller.update(cx, |c, cx| c.demo_step(cx)));
+                    }
                     cx.background_executor().timer(std::time::Duration::from_millis(600)).await;
                     let path = dir.join(format!("demo{n}.png"));
                     cx.update(|cx| {
@@ -160,9 +196,9 @@ fn main() {
         })
         .detach();
         if !controller.read(cx).listening {
-            // The system's own prompt the first time, and Settings, which
-            // says what to do and notices when it is done.
-            sys::ax::ask_trust();
+            // Settings, on the section where Accessibility is given: Allow
+            // there asks the system's own question, and the list is
+            // watched for the answer.
             settings::show(Some("general"), cx);
             let mut changes = sys::trust_changes();
             let c = controller.clone();

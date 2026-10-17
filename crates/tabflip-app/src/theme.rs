@@ -1,8 +1,8 @@
 //! The Settings window's look: the palette Alkaline Software's apps share
 //! (`themes/tabflip.json`, one config per appearance, near white with a
-//! trace of warmth in the light appearance), with tabflip's accent, the
-//! icon's blue, painted into both configs before the toolkit gets them,
-//! so `Theme::change` keeps it on every appearance switch.
+//! trace of warmth in the light appearance), with tabflip's accent,
+//! lavender, painted into both configs before the toolkit gets them, so
+//! `Theme::change` keeps it on every appearance switch.
 //!
 //! The switcher's list is drawn in its own colours (`panel.rs`), not these.
 
@@ -10,15 +10,20 @@ use gpui::App;
 use gpui_component::theme::{Theme, ThemeConfig, ThemeSet};
 
 /// The accent in each appearance (base, hover, active) and the link
-/// colour, darker in the light palette and lighter in the dark one so
-/// text on it stays readable.
-struct Accent {
+/// colour: the hover shade in the light palette and the base in the dark
+/// one, so text in it stays readable.
+pub struct Accent {
     light: [&'static str; 3],
     dark: [&'static str; 3],
     link: [&'static str; 2],
 }
 
-const BLUE: Accent = Accent { light: ["#2F6FDB", "#2862C4", "#2255AC"], dark: ["#3D84F0", "#5A97F3", "#2F6FDB"], link: ["#2255AC", "#7AAAF5"] };
+/// Lavender: a hue of the family's wheel at the family's weight, OKLCH
+/// lightness 0.52 and chroma 0.125 in the light appearance, 0.74 and
+/// 0.105 in the dark, at hue 296, halfway between periwinkle and orchid.
+/// Hover is 0.02 darker in the light appearance and 0.04 lighter in the
+/// dark; active is 0.06 and 0.04 darker (`docs/design.md`).
+pub const LAVENDER: Accent = Accent { light: ["#7057A8", "#6B51A2", "#5F4695"], dark: ["#B09DE6", "#BDAAF3", "#A491D8"], link: ["#6B51A2", "#B09DE6"] };
 
 /// The inks the palette names by name ("@l-blue", "@d-rose"), one set an
 /// appearance, for what in the toolkit draws code.
@@ -80,7 +85,7 @@ pub fn install(cx: &mut App) {
     };
     let theme = Theme::global_mut(cx);
     for mut cfg in set.themes {
-        paint(&mut cfg, &BLUE);
+        paint(&mut cfg, &LAVENDER);
         let cfg = std::rc::Rc::new(cfg);
         if cfg.mode.is_dark() {
             theme.dark_theme = cfg;

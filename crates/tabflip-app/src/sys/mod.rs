@@ -142,6 +142,70 @@ pub fn set_launch_at_login(on: bool) -> Result<(), String> {
     done.map_err(|e| e.localizedDescription().to_string())
 }
 
+// The window's language. On a Mac an app's language is its own
+// `AppleLanguages` in its defaults, which System Settings, Language &
+// Region, Applications writes. tabflip's setting is the same one.
+mod languages {
+    use objc2::runtime::AnyObject;
+    use objc2_foundation::{NSArray, NSBundle, NSString, NSUserDefaults};
+
+    const KEY: &str = "AppleLanguages";
+
+    /// `AppleLanguages` as one domain of the defaults has it, alone: not
+    /// the search list's, which falls back from the app's to the system's.
+    fn list(domain: &str) -> Vec<String> {
+        let defaults = NSUserDefaults::standardUserDefaults();
+        let Some(dict) = defaults.persistentDomainForName(&NSString::from_str(domain)) else { return Vec::new() };
+        let Some(value) = dict.objectForKey(&NSString::from_str(KEY)) else { return Vec::new() };
+        let Ok(all) = value.downcast::<NSArray>() else { return Vec::new() };
+        all.iter().filter_map(|o| o.downcast::<NSString>().ok().map(|s| s.to_string())).collect()
+    }
+
+    pub fn system() -> Vec<String> {
+        list("NSGlobalDomain")
+    }
+
+    pub fn own() -> Option<String> {
+        let id = NSBundle::mainBundle().bundleIdentifier()?;
+        list(&id.to_string()).into_iter().next()
+    }
+
+    pub fn set_own(code: Option<&str>) {
+        let defaults = NSUserDefaults::standardUserDefaults();
+        let key = NSString::from_str(KEY);
+        match code {
+            Some(code) => {
+                let one = NSArray::from_retained_slice(&[NSString::from_str(code)]);
+                let one: &AnyObject = &one;
+                unsafe { defaults.setObject_forKey(Some(one), &key) };
+            }
+            None => defaults.removeObjectForKey(&key),
+        }
+    }
+}
+
+/// The system's preferred languages, in its order, apart from any the
+/// app was given of its own; the locale's when the defaults name none.
+pub fn system_languages() -> Vec<String> {
+    let all = languages::system();
+    if !all.is_empty() {
+        return all;
+    }
+    objc2_foundation::NSLocale::preferredLanguages().iter().map(|s| s.to_string()).collect()
+}
+
+/// The language the app was given of its own, if any: by tabflip's
+/// setting or by System Settings.
+pub fn own_language() -> Option<String> {
+    languages::own()
+}
+
+/// The app given a language of its own (a bundle's code, `zh-Hans`), or
+/// none, to follow the system's.
+pub fn set_own_language(code: Option<&str>) {
+    languages::set_own(code);
+}
+
 /// Open a URL in the app the system gives it to.
 pub fn open_url(url: &str) {
     use objc2_app_kit::NSWorkspace;

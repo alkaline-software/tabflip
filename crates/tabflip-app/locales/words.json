@@ -1,0 +1,623 @@
+{
+  "General": {
+    "zh-Hans": "通用",
+    "zh-Hant": "一般",
+    "ja": "一般",
+    "ko": "일반",
+    "fr": "Général",
+    "de": "Allgemein",
+    "es": "General"
+  },
+  "Customize": {
+    "zh-Hans": "自定义",
+    "zh-Hant": "自訂",
+    "ja": "カスタマイズ",
+    "ko": "사용자화",
+    "fr": "Personnaliser",
+    "de": "Anpassen",
+    "es": "Personalizar"
+  },
+  "Updates": {
+    "zh-Hans": "更新",
+    "zh-Hant": "更新",
+    "ja": "アップデート",
+    "ko": "업데이트",
+    "fr": "Mises à jour",
+    "de": "Updates",
+    "es": "Actualizaciones"
+  },
+  "About": {
+    "zh-Hans": "关于",
+    "zh-Hant": "關於",
+    "ja": "情報",
+    "ko": "정보",
+    "fr": "À propos",
+    "de": "Über",
+    "es": "Acerca de"
+  },
+  "Settings…": {
+    "zh-Hans": "设置…",
+    "zh-Hant": "設定…",
+    "ja": "設定…",
+    "ko": "설정…",
+    "fr": "Réglages…",
+    "de": "Einstellungen …",
+    "es": "Ajustes…"
+  },
+  "Hide Others": {
+    "zh-Hans": "隐藏其他",
+    "zh-Hant": "隱藏其他",
+    "ja": "ほかを非表示",
+    "ko": "기타 가리기",
+    "fr": "Masquer les autres",
+    "de": "Andere ausblenden",
+    "es": "Ocultar otros"
+  },
+  "Show All": {
+    "zh-Hans": "全部显示",
+    "zh-Hant": "全部顯示",
+    "ja": "すべてを表示",
+    "ko": "모두 보기",
+    "fr": "Tout afficher",
+    "de": "Alle einblenden",
+    "es": "Mostrar todo"
+  },
+  "Shortcut": {
+    "zh-Hans": "快捷键",
+    "zh-Hant": "快速鍵",
+    "ja": "ショートカット",
+    "ko": "단축키",
+    "fr": "Raccourci",
+    "de": "Kurzbefehl",
+    "es": "Atajo"
+  },
+  "Reset": {
+    "zh-Hans": "重置",
+    "zh-Hant": "重置",
+    "ja": "リセット",
+    "ko": "재설정",
+    "fr": "Rétablir",
+    "de": "Standard",
+    "es": "Restablecer"
+  },
+  "App": {
+    "zh-Hans": "应用",
+    "zh-Hant": "App",
+    "ja": "アプリ",
+    "ko": "앱",
+    "fr": "App",
+    "de": "App",
+    "es": "App"
+  },
+  "System": {
+    "zh-Hans": "跟随系统",
+    "zh-Hant": "跟隨系統",
+    "ja": "システム",
+    "ko": "시스템",
+    "fr": "Système",
+    "de": "System",
+    "es": "Sistema"
+  },
+  "Launch at login": {
+    "zh-Hans": "登录时打开",
+    "zh-Hant": "登入時打開",
+    "ja": "ログイン時に開く",
+    "ko": "로그인 시 열기",
+    "fr": "Ouvrir à l’ouverture de session",
+    "de": "Beim Anmelden öffnen",
+    "es": "Abrir al iniciar sesión"
+  },
+  "Show in menu bar": {
+    "zh-Hans": "在菜单栏中显示",
+    "zh-Hant": "在選單列中顯示",
+    "ja": "メニューバーに表示",
+    "ko": "메뉴 막대에 표시",
+    "fr": "Afficher dans la barre des menus",
+    "de": "In der Menüleiste zeigen",
+    "es": "Mostrar en la barra de menús"
+  },
+  "Swap clicks": {
+    "zh-Hans": "交换左右键",
+    "zh-Hant": "交換左右鍵",
+    "ja": "クリックを入れ替える",
+    "ko": "클릭 바꾸기",
+    "fr": "Inverser les clics",
+    "de": "Klicks tauschen",
+    "es": "Intercambiar clics"
+  },
+  "Permissions": {
+    "zh-Hans": "权限",
+    "zh-Hant": "權限",
+    "ja": "アクセス権",
+    "ko": "권한",
+    "fr": "Autorisations",
+    "de": "Berechtigungen",
+    "es": "Permisos"
+  },
+  "Accessibility": {
+    "zh-Hans": "辅助功能",
+    "zh-Hant": "輔助使用",
+    "ja": "アクセシビリティ",
+    "ko": "손쉬운 사용",
+    "fr": "Accessibilité",
+    "de": "Bedienungshilfen",
+    "es": "Accesibilidad"
+  },
+  "Allowed": {
+    "zh-Hans": "已允许",
+    "zh-Hant": "已允許",
+    "ja": "許可済み",
+    "ko": "허용됨",
+    "fr": "Autorisé",
+    "de": "Erlaubt",
+    "es": "Permitido"
+  },
+  "Allow": {
+    "zh-Hans": "允许",
+    "zh-Hant": "允許",
+    "ja": "許可",
+    "ko": "허용",
+    "fr": "Autoriser",
+    "de": "Erlauben",
+    "es": "Permitir"
+  },
+  "Open Settings": {
+    "zh-Hans": "打开设置",
+    "zh-Hant": "打開設定",
+    "ja": "設定を開く",
+    "ko": "설정 열기",
+    "fr": "Ouvrir les réglages",
+    "de": "Einstellungen öffnen",
+    "es": "Abrir ajustes"
+  },
+  "Version": {
+    "zh-Hans": "版本",
+    "zh-Hant": "版本",
+    "ja": "バージョン",
+    "ko": "버전",
+    "fr": "Version",
+    "de": "Version",
+    "es": "Versión"
+  },
+  "Check for updates": {
+    "zh-Hans": "检查更新",
+    "zh-Hant": "檢查更新",
+    "ja": "アップデートを確認",
+    "ko": "업데이트 확인",
+    "fr": "Rechercher",
+    "de": "Nach Updates suchen",
+    "es": "Buscar actualizaciones"
+  },
+  "Checking…": {
+    "zh-Hans": "正在检查…",
+    "zh-Hant": "正在檢查…",
+    "ja": "確認中…",
+    "ko": "확인 중…",
+    "fr": "Recherche…",
+    "de": "Suche …",
+    "es": "Buscando…"
+  },
+  "Release Notes": {
+    "zh-Hans": "更新说明",
+    "zh-Hant": "更新說明",
+    "ja": "リリースノート",
+    "ko": "릴리스 노트",
+    "fr": "Notes de version",
+    "de": "Versionshinweise",
+    "es": "Notas de la versión"
+  },
+  "Check automatically": {
+    "zh-Hans": "自动检查",
+    "zh-Hant": "自動檢查",
+    "ja": "自動的に確認",
+    "ko": "자동으로 확인",
+    "fr": "Rechercher automatiquement",
+    "de": "Automatisch suchen",
+    "es": "Buscar automáticamente"
+  },
+  "{studio} presents": {
+    "zh-Hans": "{studio} 出品",
+    "zh-Hant": "{studio} 出品",
+    "ja": "{studio} 提供",
+    "ko": "{studio} 제공",
+    "fr": "{studio} présente",
+    "de": "{studio} präsentiert",
+    "es": "{studio} presenta"
+  },
+  "A studio by {jp} and {pingfan}.": {
+    "zh-Hans": "由 {jp} 和 {pingfan} 创立的工作室。",
+    "zh-Hant": "由 {jp} 和 {pingfan} 創立的工作室。",
+    "ja": "{jp} と {pingfan} のスタジオ。",
+    "ko": "{jp}와 {pingfan}의 스튜디오.",
+    "fr": "Un studio de {jp} et {pingfan}.",
+    "de": "Ein Studio von {jp} und {pingfan}.",
+    "es": "Un estudio de {jp} y {pingfan}."
+  },
+  "Quit tabflip": {
+    "zh-Hans": "退出 tabflip",
+    "zh-Hant": "結束 tabflip",
+    "ja": "tabflip を終了",
+    "ko": "tabflip 종료",
+    "fr": "Quitter tabflip",
+    "de": "tabflip beenden",
+    "es": "Salir de tabflip"
+  },
+  "Hide tabflip": {
+    "zh-Hans": "隐藏 tabflip",
+    "zh-Hant": "隱藏 tabflip",
+    "ja": "tabflip を非表示",
+    "ko": "tabflip 가리기",
+    "fr": "Masquer tabflip",
+    "de": "tabflip ausblenden",
+    "es": "Ocultar tabflip"
+  },
+  "Switcher": {
+    "zh-Hans": "切换器",
+    "zh-Hant": "切換器",
+    "ja": "スイッチャー",
+    "ko": "전환기",
+    "fr": "Sélecteur",
+    "de": "Umschalter",
+    "es": "Selector"
+  },
+  "Press keys…": {
+    "zh-Hans": "按下按键…",
+    "zh-Hant": "按下按鍵…",
+    "ja": "キーを押す…",
+    "ko": "키를 누르세요…",
+    "fr": "Appuyez sur les touches…",
+    "de": "Tasten drücken …",
+    "es": "Pulsa las teclas…"
+  },
+  "Press the keys, or Esc to keep the old one.": {
+    "zh-Hans": "按下新的按键，或按 Esc 保留原来的。",
+    "zh-Hant": "按下新的按鍵，或按 Esc 保留原來的。",
+    "ja": "キーを押してください。Esc で元のままにします。",
+    "ko": "키를 누르세요. Esc를 누르면 그대로 둡니다.",
+    "fr": "Appuyez sur les touches, ou sur Échap pour garder l’ancien.",
+    "de": "Tasten drücken, oder Esc, um den alten zu behalten.",
+    "es": "Pulsa las teclas, o Esc para conservar el anterior."
+  },
+  "Allow Accessibility below first.": {
+    "zh-Hans": "请先在下方允许辅助功能。",
+    "zh-Hant": "請先在下方允許輔助使用。",
+    "ja": "先に下のアクセシビリティを許可してください。",
+    "ko": "먼저 아래에서 손쉬운 사용을 허용하세요.",
+    "fr": "Autorisez d’abord l’accessibilité ci‑dessous.",
+    "de": "Zuerst unten die Bedienungshilfen erlauben.",
+    "es": "Permite primero la accesibilidad más abajo."
+  },
+  "macOS kept its own ⌘Tab; try ⌥Tab.": {
+    "zh-Hans": "macOS 保留了自己的 ⌘Tab，试试 ⌥Tab。",
+    "zh-Hant": "macOS 保留了自己的 ⌘Tab，試試 ⌥Tab。",
+    "ja": "macOS が ⌘Tab を手放しません。⌥Tab をお試しください。",
+    "ko": "macOS가 ⌘Tab을 내주지 않습니다. ⌥Tab을 써 보세요.",
+    "fr": "macOS a gardé son ⌘Tab ; essayez ⌥Tab.",
+    "de": "macOS behält sein ⌘Tab; versuchen Sie ⌥Tab.",
+    "es": "macOS se ha quedado con su ⌘Tab; prueba ⌥Tab."
+  },
+  "Replaces the Mac's own ⌘Tab while tabflip runs.": {
+    "zh-Hans": "tabflip 运行时取代 Mac 自己的 ⌘Tab。",
+    "zh-Hant": "tabflip 執行時取代 Mac 自己的 ⌘Tab。",
+    "ja": "tabflip の実行中は Mac の ⌘Tab に代わります。",
+    "ko": "tabflip가 실행되는 동안 Mac의 ⌘Tab을 대신합니다.",
+    "fr": "Remplace le ⌘Tab du Mac tant que tabflip tourne.",
+    "de": "Ersetzt das ⌘Tab des Mac, solange tabflip läuft.",
+    "es": "Sustituye el ⌘Tab del Mac mientras tabflip está abierto."
+  },
+  "Hold it, press again to move down, let go to switch.": {
+    "zh-Hans": "按住不放，再按一次向下移动，松开即切换。",
+    "zh-Hant": "按住不放，再按一次向下移動，放開即切換。",
+    "ja": "押したまま、もう一度押すと下へ、離すと切り替わります。",
+    "ko": "누른 채로 다시 누르면 아래로, 놓으면 전환됩니다.",
+    "fr": "Maintenez, appuyez encore pour descendre, relâchez pour changer.",
+    "de": "Halten, erneut drücken für die nächste Zeile, loslassen zum Wechseln.",
+    "es": "Mantén pulsado, pulsa de nuevo para bajar, suelta para cambiar."
+  },
+  "Hold ⌘, ⌥ or ⌃ with the key": {
+    "zh-Hans": "请同时按住 ⌘、⌥ 或 ⌃",
+    "zh-Hant": "請同時按住 ⌘、⌥ 或 ⌃",
+    "ja": "⌘、⌥、⌃ のいずれかと一緒に押してください",
+    "ko": "⌘, ⌥ 또는 ⌃을 함께 누르세요",
+    "fr": "Maintenez ⌘, ⌥ ou ⌃ avec la touche",
+    "de": "⌘, ⌥ oder ⌃ mit der Taste halten",
+    "es": "Mantén ⌘, ⌥ o ⌃ con la tecla"
+  },
+  "⇧ is for going back; leave it out": {
+    "zh-Hans": "⇧ 用于向上移动，请不要使用",
+    "zh-Hant": "⇧ 用於向上移動，請不要使用",
+    "ja": "⇧ は戻るためのキーです。外してください",
+    "ko": "⇧은 뒤로 가는 키입니다. 빼 주세요",
+    "fr": "⇧ sert à remonter ; laissez‑la de côté",
+    "de": "⇧ geht zurück; weglassen",
+    "es": "⇧ es para retroceder; déjala fuera"
+  },
+  "That key moves through the list": {
+    "zh-Hans": "这个键用于在列表中移动",
+    "zh-Hant": "這個鍵用於在列表中移動",
+    "ja": "そのキーはリストの移動に使います",
+    "ko": "그 키는 목록을 이동하는 데 쓰입니다",
+    "fr": "Cette touche sert à parcourir la liste",
+    "de": "Diese Taste bewegt durch die Liste",
+    "es": "Esa tecla se mueve por la lista"
+  },
+  "That key can't be used": {
+    "zh-Hans": "这个键不能使用",
+    "zh-Hant": "這個鍵不能使用",
+    "ja": "そのキーは使えません",
+    "ko": "그 키는 사용할 수 없습니다",
+    "fr": "Cette touche ne peut pas être utilisée",
+    "de": "Diese Taste kann nicht verwendet werden",
+    "es": "Esa tecla no se puede usar"
+  },
+  "When hidden, open tabflip again to come back here.": {
+    "zh-Hans": "隐藏后，再次打开 tabflip 即可回到这里。",
+    "zh-Hant": "隱藏後，再次打開 tabflip 即可回到這裡。",
+    "ja": "非表示のときは、tabflip をもう一度開くとここに戻れます。",
+    "ko": "숨긴 뒤에는 tabflip을 다시 열면 여기로 돌아옵니다.",
+    "fr": "Une fois masqué, rouvrez tabflip pour revenir ici.",
+    "de": "Ausgeblendet: tabflip erneut öffnen, um hierher zurückzukommen.",
+    "es": "Si está oculto, abre tabflip de nuevo para volver aquí."
+  },
+  "The menu on a left click, Settings on a right one.": {
+    "zh-Hans": "左键显示菜单，右键打开设置。",
+    "zh-Hant": "左鍵顯示選單，右鍵打開設定。",
+    "ja": "左クリックでメニュー、右クリックで設定。",
+    "ko": "왼쪽 클릭은 메뉴, 오른쪽 클릭은 설정.",
+    "fr": "Le menu au clic gauche, les réglages au clic droit.",
+    "de": "Das Menü mit Linksklick, Einstellungen mit Rechtsklick.",
+    "es": "El menú con clic izquierdo, los ajustes con clic derecho."
+  },
+  "To see every window and switch to it.": {
+    "zh-Hans": "用于查看每个窗口并切换过去。",
+    "zh-Hant": "用於查看每個視窗並切換過去。",
+    "ja": "すべてのウインドウを見て切り替えるために必要です。",
+    "ko": "모든 윈도우를 보고 전환하는 데 필요합니다.",
+    "fr": "Pour voir chaque fenêtre et y passer.",
+    "de": "Um jedes Fenster zu sehen und dorthin zu wechseln.",
+    "es": "Para ver cada ventana y cambiar a ella."
+  },
+  "Turn tabflip on in the list; it starts by itself.": {
+    "zh-Hans": "在列表中打开 tabflip，它会自行启动。",
+    "zh-Hant": "在列表中打開 tabflip，它會自行啟動。",
+    "ja": "リストで tabflip をオンにすると、自動で始まります。",
+    "ko": "목록에서 tabflip을 켜면 저절로 시작됩니다.",
+    "fr": "Activez tabflip dans la liste ; il démarre tout seul.",
+    "de": "tabflip in der Liste einschalten; es startet von selbst.",
+    "es": "Activa tabflip en la lista; se pone en marcha solo."
+  },
+  "The list": {
+    "zh-Hans": "列表",
+    "zh-Hant": "列表",
+    "ja": "リスト",
+    "ko": "목록",
+    "fr": "La liste",
+    "de": "Die Liste",
+    "es": "La lista"
+  },
+  "Size": {
+    "zh-Hans": "大小",
+    "zh-Hant": "大小",
+    "ja": "サイズ",
+    "ko": "크기",
+    "fr": "Taille",
+    "de": "Größe",
+    "es": "Tamaño"
+  },
+  "Small": {
+    "zh-Hans": "小",
+    "zh-Hant": "小",
+    "ja": "小",
+    "ko": "작게",
+    "fr": "Petite",
+    "de": "Klein",
+    "es": "Pequeño"
+  },
+  "Medium": {
+    "zh-Hans": "中",
+    "zh-Hant": "中",
+    "ja": "中",
+    "ko": "중간",
+    "fr": "Moyenne",
+    "de": "Mittel",
+    "es": "Mediano"
+  },
+  "Large": {
+    "zh-Hans": "大",
+    "zh-Hant": "大",
+    "ja": "大",
+    "ko": "크게",
+    "fr": "Grande",
+    "de": "Groß",
+    "es": "Grande"
+  },
+  "Highlight": {
+    "zh-Hans": "高亮",
+    "zh-Hant": "高亮",
+    "ja": "ハイライト",
+    "ko": "강조",
+    "fr": "Surbrillance",
+    "de": "Hervorhebung",
+    "es": "Resaltado"
+  },
+  "Blue": {
+    "zh-Hans": "蓝色",
+    "zh-Hant": "藍色",
+    "ja": "ブルー",
+    "ko": "파란색",
+    "fr": "Bleu",
+    "de": "Blau",
+    "es": "Azul"
+  },
+  "Purple": {
+    "zh-Hans": "紫色",
+    "zh-Hant": "紫色",
+    "ja": "パープル",
+    "ko": "보라색",
+    "fr": "Violet",
+    "de": "Lila",
+    "es": "Morado"
+  },
+  "Pink": {
+    "zh-Hans": "粉色",
+    "zh-Hant": "粉紅色",
+    "ja": "ピンク",
+    "ko": "분홍색",
+    "fr": "Rose",
+    "de": "Rosa",
+    "es": "Rosa"
+  },
+  "Red": {
+    "zh-Hans": "红色",
+    "zh-Hant": "紅色",
+    "ja": "レッド",
+    "ko": "빨간색",
+    "fr": "Rouge",
+    "de": "Rot",
+    "es": "Rojo"
+  },
+  "Orange": {
+    "zh-Hans": "橙色",
+    "zh-Hant": "橙色",
+    "ja": "オレンジ",
+    "ko": "주황색",
+    "fr": "Orange",
+    "de": "Orange",
+    "es": "Naranja"
+  },
+  "Green": {
+    "zh-Hans": "绿色",
+    "zh-Hant": "綠色",
+    "ja": "グリーン",
+    "ko": "초록색",
+    "fr": "Vert",
+    "de": "Grün",
+    "es": "Verde"
+  },
+  "Teal": {
+    "zh-Hans": "青色",
+    "zh-Hant": "青色",
+    "ja": "ティール",
+    "ko": "청록색",
+    "fr": "Sarcelle",
+    "de": "Blaugrün",
+    "es": "Verde azulado"
+  },
+  "Graphite": {
+    "zh-Hans": "石墨色",
+    "zh-Hant": "石墨色",
+    "ja": "グラファイト",
+    "ko": "흑연색",
+    "fr": "Graphite",
+    "de": "Graphit",
+    "es": "Grafito"
+  },
+  "Your own colour": {
+    "zh-Hans": "自定义颜色",
+    "zh-Hant": "自訂顏色",
+    "ja": "好きな色",
+    "ko": "원하는 색",
+    "fr": "Votre couleur",
+    "de": "Eigene Farbe",
+    "es": "Tu propio color"
+  },
+  "Any colour, as hex.": {
+    "zh-Hans": "任意颜色，十六进制。",
+    "zh-Hant": "任意顏色，十六進位。",
+    "ja": "どんな色でも、16 進数で。",
+    "ko": "어떤 색이든, 16진수로.",
+    "fr": "N’importe quelle couleur, en hexadécimal.",
+    "de": "Jede Farbe, als Hex.",
+    "es": "Cualquier color, en hexadecimal."
+  },
+  "Not a colour: #rrggbb or #rgb.": {
+    "zh-Hans": "不是颜色：请用 #rrggbb 或 #rgb。",
+    "zh-Hant": "不是顏色：請用 #rrggbb 或 #rgb。",
+    "ja": "色ではありません。#rrggbb か #rgb で。",
+    "ko": "색이 아닙니다. #rrggbb 또는 #rgb로.",
+    "fr": "Pas une couleur : #rrggbb ou #rgb.",
+    "de": "Keine Farbe: #rrggbb oder #rgb.",
+    "es": "No es un color: #rrggbb o #rgb."
+  },
+  "Preview": {
+    "zh-Hans": "预览",
+    "zh-Hant": "預覽",
+    "ja": "プレビュー",
+    "ko": "미리보기",
+    "fr": "Aperçu",
+    "de": "Vorschau",
+    "es": "Vista previa"
+  },
+  "Up to date.": {
+    "zh-Hans": "已是最新版本。",
+    "zh-Hant": "已是最新版本。",
+    "ja": "最新です。",
+    "ko": "최신 버전입니다.",
+    "fr": "À jour.",
+    "de": "Auf dem neuesten Stand.",
+    "es": "Actualizado."
+  },
+  "A newer version is out.": {
+    "zh-Hans": "有新版本。",
+    "zh-Hant": "有新版本。",
+    "ja": "新しいバージョンがあります。",
+    "ko": "새 버전이 있습니다.",
+    "fr": "Une nouvelle version est disponible.",
+    "de": "Eine neuere Version ist da.",
+    "es": "Hay una versión más reciente."
+  },
+  "Could not reach GitHub.": {
+    "zh-Hans": "无法连接 GitHub。",
+    "zh-Hant": "無法連接 GitHub。",
+    "ja": "GitHub に接続できませんでした。",
+    "ko": "GitHub에 연결할 수 없습니다.",
+    "fr": "Impossible de joindre GitHub.",
+    "de": "GitHub nicht erreichbar.",
+    "es": "No se pudo conectar con GitHub."
+  },
+  "Release notes": {
+    "zh-Hans": "更新说明",
+    "zh-Hant": "更新說明",
+    "ja": "リリースノート",
+    "ko": "릴리스 노트",
+    "fr": "Notes de version",
+    "de": "Versionshinweise",
+    "es": "Notas de la versión"
+  },
+  "Download {v}": {
+    "zh-Hans": "下载 {v}",
+    "zh-Hant": "下載 {v}",
+    "ja": "{v} をダウンロード",
+    "ko": "{v} 다운로드",
+    "fr": "Télécharger {v}",
+    "de": "{v} laden",
+    "es": "Descargar {v}"
+  },
+  "Once a day. Nothing is installed without you.": {
+    "zh-Hans": "每天一次。不会自行安装任何内容。",
+    "zh-Hant": "每天一次。不會自行安裝任何內容。",
+    "ja": "1 日 1 回。勝手にインストールはしません。",
+    "ko": "하루 한 번. 아무것도 저절로 설치되지 않습니다.",
+    "fr": "Une fois par jour. Rien n’est installé sans vous.",
+    "de": "Einmal am Tag. Nichts wird ohne Sie installiert.",
+    "es": "Una vez al día. Nada se instala sin ti."
+  },
+  "Open the downloaded disk image and drag tabflip to Applications, over the old one.": {
+    "zh-Hans": "打开下载的磁盘映像，把 tabflip 拖到“应用程序”并替换旧版本。",
+    "zh-Hant": "打開下載的磁碟映像檔，把 tabflip 拖到「應用程式」並取代舊版本。",
+    "ja": "ダウンロードしたディスクイメージを開き、tabflip を「アプリケーション」の古いものの上にドラッグしてください。",
+    "ko": "다운로드한 디스크 이미지를 열고 tabflip을 응용 프로그램의 기존 항목 위로 드래그하세요.",
+    "fr": "Ouvrez l’image disque téléchargée et glissez tabflip dans Applications, par‑dessus l’ancien.",
+    "de": "Das geladene Image öffnen und tabflip über das alte nach Programme ziehen.",
+    "es": "Abre la imagen de disco descargada y arrastra tabflip a Aplicaciones, sobre el anterior."
+  },
+  "Switch between windows, not apps · Version {v}": {
+    "zh-Hans": "在窗口之间切换，而不是应用 · 版本 {v}",
+    "zh-Hant": "在視窗之間切換，而不是 App · 版本 {v}",
+    "ja": "アプリではなく、ウインドウを切り替える · バージョン {v}",
+    "ko": "앱이 아니라 윈도우를 전환합니다 · 버전 {v}",
+    "fr": "Passer d’une fenêtre à l’autre, pas d’une app à l’autre · Version {v}",
+    "de": "Zwischen Fenstern wechseln, nicht zwischen Apps · Version {v}",
+    "es": "Cambia entre ventanas, no entre apps · Versión {v}"
+  }
+}

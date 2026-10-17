@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tabflip App Icon</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px; padding: 40px;
+    background: #f3f2f0; color: #1c1c1e;
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+  }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+  .card {
+    background: #fff; border: 1px solid #e4e2de; border-radius: 16px;
+    padding: 36px 44px; margin-bottom: 22px;
+    display: flex; align-items: center; gap: 56px;
+  }
+  .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+  .card p { font-size: 14px; color: #5c5c62; margin-bottom: 22px; line-height: 1.5; max-width: 760px; }
+  .sizes { display: flex; align-items: flex-end; gap: 30px; }
+  .sizes figure { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .sizes figcaption { font-size: 12px; color: #5c5c62; }
+  .sizes .gap { width: 16px; }
+  canvas { display: block; }
+  .zoom { image-rendering: pixelated; }
+  .usage { align-items: center; }
+  .usage .label { width: 300px; flex: none; }
+  .usage .label h2 { margin-bottom: 10px; }
+  .usage .label p { margin: 0; }
+  .bars { display: flex; flex-direction: column; gap: 16px; }
+  .bar { display: flex; gap: 20px; padding: 22px 24px; border-radius: 18px; }
+  .bar.dark { background: #1f2024; color: #f2f2f4; }
+  .bar.light { background: #eceae6; border: 1px solid #dcd9d3; }
+  .org { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
+  .org canvas { border-radius: 8px; }
+  .org canvas.template { border-radius: 0; margin-left: 24px; }
+  .bar.dark canvas.template { filter: invert(1); }
+</style>
+</head>
+<body>
+<h1>tabflip App Icon</h1>
+<div id="cards"></div>
+<div class="card usage">
+  <div class="label">
+    <h2>Beside its name</h2>
+    <p>Drawn at 48 px as a full square. The host rounds the corners. At the end, the menu bar's template image at 18 pt, tinted as the system tints it.</p>
+  </div>
+  <div class="bars">
+    <div class="bar dark" id="bar-dark"></div>
+    <div class="bar light" id="bar-light"></div>
+  </div>
+</div>
+
+<script>
+// The icon is drawn in a 100-unit box. `bleed` fills the whole canvas as a
+// square; otherwise the body is an inset squircle with a shadow (the app icon).
+// The ground and the line colours are the studio's, as in Emaki and Kotoba;
+// the lavender is tabflip's accent, its dark shade, which stands clear of
+// the navy.
+const NAVY = '#2b2556', AMBER = '#ffb83e', VIOLET = '#6a3fd9', LAVENDER = '#b09de6', CREAM = '#f8efe0';
+
+// Which candidate is drawn: see CANDIDATES. 1 is the one in use.
+const VARIANT = 1;
+
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+const stroke = (ctx, pts, style, width, cap = 'round') => {
+  ctx.strokeStyle = style; ctx.lineWidth = width; ctx.lineCap = cap; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (const [x, y] of pts) ctx.lineTo(x, y);
+  ctx.stroke();
+};
+
+// four-point spark centred on (cx, cy)
+function sparkle(ctx, cx, cy, r) {
+  const k = r * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.quadraticCurveTo(cx + k, cy - k, cx + r, cy);
+  ctx.quadraticCurveTo(cx + k, cy + k, cx, cy + r);
+  ctx.quadraticCurveTo(cx - k, cy + k, cx - r, cy);
+  ctx.quadraticCurveTo(cx - k, cy - k, cx, cy - r);
+  ctx.closePath();
+}
+const spark = (x, y) => ctx => { ctx.fillStyle = VIOLET; sparkle(ctx, x, y, 5.5); ctx.fill(); };
+
+// How many pixels the 100-unit box is drawn at, for what simplifies.
+const across = ctx => ctx.getTransform().a * 100;
+
+// A window: a rounded card stroked at twice the line's width in navy,
+// then filled, so the fill covers the inner half of the line and the line
+// reads 2.6 wide (3.2 below 40 px across, where 2.6 thins to under a
+// pixel). `fill` is the card's own colour.
+function card(ctx, x, y, w, h, fill) {
+  ctx.strokeStyle = NAVY; ctx.lineWidth = across(ctx) < 40 ? 6.4 : 5.2; ctx.lineJoin = 'round';
+  rr(ctx, x, y, w, h, 6); ctx.stroke();
+  ctx.fillStyle = fill; rr(ctx, x, y, w, h, 6); ctx.fill();
+}
+
+// A unit measure moved so it lands on a whole pixel at this size, for the
+// cards' edges at 32 px and below.
+function snap(ctx, v) {
+  const k = ctx.getTransform().a;
+  return Math.round(v * k) / k;
+}
+
+// 1. The fanned stack: three windows, each up and to the right of the one
+// behind it, the front one filled with lavender, the one chosen, its title
+// bar the amber stroke. Below 40 px across the back card and the title bar
+// go, and two cards with the lavender fill are what still read.
+const STACK = [[11, 42, 54, 38], [23, 30, 54, 38], [35, 18, 54, 38]];
+function stackGlyph(ctx, arrow) {
+  const small = across(ctx) < 40;
+  const cards = small ? STACK.slice(1) : STACK;
+  cards.forEach(([x, y, w, h], i) => {
+    const front = i === cards.length - 1;
+    const [sx, sy, sw, sh] = small ? [snap(ctx, x), snap(ctx, y), snap(ctx, w), snap(ctx, h)] : [x, y, w, h];
+    card(ctx, sx, sy, sw, sh, front ? LAVENDER : CREAM);
+  });
+  if (small) return;
+  const [x, y] = STACK[2];
+  if (arrow) {
+    // from the back card's foot, round its left, onto the front card's top
+    ctx.strokeStyle = AMBER; ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(20, 85);
+    ctx.bezierCurveTo(2, 82, 2, 42, 18, 26);
+    ctx.bezierCurveTo(26, 18, 40, 10, 54, 10);
+    ctx.stroke();
+    stroke(ctx, [[48, 4], [55, 10], [48, 16]], AMBER, 4.5);
+  } else {
+    stroke(ctx, [[x + 8, y + 8.5], [x + 24, y + 8.5]], AMBER, 4);
+  }
+}
+
+// 2. The flip: a window lying flat and one turning on its right edge, a
+// page being turned, its near edge amber.
+function flipGlyph(ctx) {
+  const small = across(ctx) < 40;
+  card(ctx, 18, 30, 56, 42, CREAM);
+  // the turning window: a parallelogram standing on the flat one's right
+  ctx.save();
+  ctx.transform(1, 0, -0.45, 0.78, 0, 0);
+  const x = 46, y = 24, w = 46, h = 44;
+  ctx.strokeStyle = NAVY; ctx.lineWidth = 5.2; ctx.lineJoin = 'round';
+  rr(ctx, x, y, w, h, 6); ctx.stroke();
+  ctx.fillStyle = LAVENDER; rr(ctx, x, y, w, h, 6); ctx.fill();
+  ctx.restore();
+  if (!small) stroke(ctx, [[36, 22], [36, 60]], AMBER, 4.5);
+}
+
+// 3. The rows: one window with three rows, the middle one lit, as the
+// list looks mid-flip. The title bar is amber.
+function rowsGlyph(ctx) {
+  const small = across(ctx) < 40;
+  card(ctx, 14, 20, 72, 60, CREAM);
+  if (!small) stroke(ctx, [[22, 28.5], [40, 28.5]], AMBER, 4);
+  const rows = small ? [[40, false], [52, true], [64, false]] : [[41, false], [55, true], [69, false]];
+  for (const [y, lit] of rows) {
+    if (lit) { ctx.fillStyle = LAVENDER; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.fill(); ctx.strokeStyle = NAVY; ctx.lineWidth = 2.6; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.stroke(); }
+    else stroke(ctx, [[27, y], [27 + (y > 60 ? 22 : 34), y]], NAVY, 3.5);
+  }
+}
+
+// The menu bar's template image: the two front windows as one black
+// silhouette with the gap between them cut out, on a transparent square.
+// The system tints it, so only its alpha counts. The pair is scaled to
+// fill the square.
+function stackTemplate(canvas, px) {
+  canvas.width = px; canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(px / 100, px / 100);
+  const [[bx, by, bw, bh], [fx, fy, fw, fh]] = [STACK[1], STACK[2]];
+  // the pair's bounds, fitted to 94 of the 100
+  const x0 = bx, y0 = fy, x1 = fx + fw, y1 = by + bh;
+  const k = 94 / Math.max(x1 - x0, y1 - y0);
+  ctx.translate(50, 50); ctx.scale(k, k); ctx.translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+  ctx.fillStyle = ctx.strokeStyle = '#000'; ctx.lineJoin = 'round';
+  rr(ctx, bx, by, bw, bh, 6); ctx.fill();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.lineWidth = 7; rr(ctx, fx, fy, fw, fh, 6); ctx.stroke(); ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  rr(ctx, fx, fy, fw, fh, 6); ctx.fill();
+}
+function flipTemplate(canvas, px) {
+  canvas.width = px; canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(px / 100, px / 100);
+  ctx.translate(50, 50); ctx.scale(1.35, 1.35); ctx.translate(-50, -50);
+  ctx.fillStyle = ctx.strokeStyle = '#000'; ctx.lineJoin = 'round';
+  rr(ctx, 18, 30, 56, 42, 6); ctx.fill();
+  ctx.save(); ctx.transform(1, 0, -0.45, 0.78, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 7; rr(ctx, 46, 24, 46, 44, 6); ctx.stroke(); ctx.fill();
+  ctx.globalCompositeOperation = 'source-over'; rr(ctx, 46, 24, 46, 44, 6); ctx.fill();
+  ctx.restore();
+}
+function rowsTemplate(canvas, px) {
+  canvas.width = px; canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(px / 100, px / 100);
+  ctx.translate(50, 50); ctx.scale(1.3, 1.3); ctx.translate(-50, -50);
+  ctx.fillStyle = ctx.strokeStyle = '#000'; ctx.lineCap = 'round';
+  rr(ctx, 14, 20, 72, 60, 8); ctx.fill();
+  ctx.globalCompositeOperation = 'destination-out';
+  for (const y of [38, 50, 62]) stroke(ctx, [[26, y], [74, y]], '#000', 6);
+}
+
+const CANDIDATES = {
+  1: { name: 'Fanned stack', desc: 'Three windows, each up and to the right of the one behind it, as a hand flips through them. The front one is the one chosen, filled with lavender, its title bar the amber stroke. Below 40 px the back window and the title bar go, and two cards with the lavender fill are what still read.', glyph(ctx) { stackGlyph(ctx, false); spark(20, 21)(ctx); }, template: stackTemplate },
+  2: { name: 'Page turn', desc: 'A window lying flat and one turning on its right edge, as a page is turned, its near edge amber.', glyph(ctx) { flipGlyph(ctx); spark(20, 22)(ctx); }, template: flipTemplate },
+  3: { name: 'Lit row', desc: 'One window with three rows, the middle row lit with lavender, as the list looks mid-flip: the first icon\'s drawing in the studio\'s manner.', glyph(ctx) { rowsGlyph(ctx); spark(84, 14)(ctx); }, template: rowsTemplate },
+  4: { name: 'Fanned stack, arrow', desc: 'The fanned stack with the amber stroke as an arrow that comes off the back of the stack and lands on the front. It crowded the spark and read as a refresh sign.', glyph(ctx) { stackGlyph(ctx, true); spark(20, 21)(ctx); }, template: stackTemplate },
+};
+
+const ICON = { ...CANDIDATES[VARIANT], bg: ['#fdf8ee', '#f1e4d0'] };  // top left to bottom right
+const drawTemplate = ICON.template;
+
+function drawIcon(canvas, icon, px, bleed) {
+  canvas.width = px; canvas.height = px;
+  const ctx = canvas.getContext('2d');
+  const inset = bleed ? 0 : Math.round(px * 0.09);
+  const body = px - inset * 2;
+
+  // the glyph on its own transparent layer
+  const layer = document.createElement('canvas');
+  layer.width = body; layer.height = body;
+  const g = layer.getContext('2d');
+  g.scale(body / 100, body / 100);
+  icon.glyph(g);
+
+  ctx.save();
+  if (!bleed) {
+    ctx.translate(inset, inset); ctx.scale(body / 100, body / 100);
+    ctx.shadowColor = 'rgba(20, 16, 50, 0.28)'; ctx.shadowBlur = px * 0.045; ctx.shadowOffsetY = px * 0.022;
+    rr(ctx, 0, 0, 100, 100, 23); ctx.fillStyle = icon.bg[1]; ctx.fill();
+    ctx.shadowColor = 'transparent';
+    rr(ctx, 0, 0, 100, 100, 23); ctx.clip();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  ctx.drawImage(gradientCanvas(body, icon.bg), inset, inset);
+  ctx.drawImage(layer, inset, inset);
+  ctx.restore();
+}
+
+// Diagonal gradient computed per pixel. A canvas gradient fill is dithered by
+// the browser, and that noise makes the PNG about ten times larger.
+function gradientCanvas(size, [from, to]) {
+  const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  const a = rgb(from), b = rgb(to);
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(size, size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const t = (x + y + 1) / (2 * size), i = (y * size + x) * 4;
+      for (let k = 0; k < 3; k++) img.data[i + k] = Math.round(a[k] + (b[k] - a[k]) * t);
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+
+// `css` is the displayed size; `native` forces a 1:1 pixel buffer (for the zoomed proofs)
+function makeCanvas(icon, css, opts = {}) {
+  const c = document.createElement('canvas');
+  const px = opts.native || Math.round(css * (window.devicePixelRatio || 1));
+  drawIcon(c, icon, px, opts.bleed);
+  c.style.width = css + 'px'; c.style.height = css + 'px';
+  if (opts.native) c.className = 'zoom';
+  return c;
+}
+
+function fig(canvas, caption) {
+  const f = document.createElement('figure');
+  f.appendChild(canvas);
+  const cap = document.createElement('figcaption'); cap.textContent = caption;
+  f.appendChild(cap);
+  return f;
+}
+
+const cards = document.getElementById('cards');
+for (const n of Object.keys(CANDIDATES)) {
+  const icon = { ...CANDIDATES[n], bg: ICON.bg };
+  const card = document.createElement('div'); card.className = 'card';
+  card.appendChild(makeCanvas(icon, 280));
+  const info = document.createElement('div');
+  info.innerHTML = `<h2>${n}. ${icon.name}${Number(n) === VARIANT ? ' (in use)' : ''}</h2><p>${icon.desc}</p>`;
+  const sizes = document.createElement('div'); sizes.className = 'sizes';
+  for (const s of [128, 64, 32, 16]) sizes.appendChild(fig(makeCanvas(icon, s), String(s)));
+  const gap = document.createElement('div'); gap.className = 'gap'; sizes.appendChild(gap);
+  sizes.appendChild(fig(makeCanvas(icon, 128, { native: 32 }), '32 px ×4'));
+  sizes.appendChild(fig(makeCanvas(icon, 64, { native: 16 }), '16 px ×4'));
+  const m = document.createElement('canvas'); m.className = 'zoom';
+  icon.template(m, 36); m.style.width = '72px'; m.style.height = '72px';
+  sizes.appendChild(fig(m, 'menu bar ×2'));
+  info.appendChild(sizes);
+  card.appendChild(info);
+  cards.appendChild(card);
+}
+
+for (const id of ['bar-dark', 'bar-light']) {
+  const bar = document.getElementById(id);
+  const app = document.createElement('div'); app.className = 'org';
+  app.appendChild(makeCanvas(ICON, 48, { bleed: true }));
+  const t = document.createElement('span'); t.textContent = 'tabflip';
+  app.appendChild(t);
+  const m = document.createElement('canvas'); m.className = 'template';
+  drawTemplate(m, Math.round(18 * (window.devicePixelRatio || 1)));
+  m.style.width = '18px'; m.style.height = '18px';
+  app.appendChild(m);
+  bar.appendChild(app);
+}
+
+window.exportTemplate = (px = 36) => {
+  const c = document.createElement('canvas');
+  drawTemplate(c, px);
+  return c.toDataURL('image/png');
+};
+
+// A PNG as a data URL: the full square by default, or the squircle app
+// icon with exportIcon(px, false).
+window.exportIcon = (px = 2048, bleed = true) => {
+  const c = document.createElement('canvas');
+  drawIcon(c, ICON, px, bleed);
+  return c.toDataURL('image/png');
+};
+
+// For choosing: a candidate at a size, from the renderer.
+window.exportCandidate = (n, px) => {
+  const c = document.createElement('canvas');
+  drawIcon(c, { ...CANDIDATES[n], bg: ICON.bg }, px, false);
+  return c.toDataURL('image/png');
+};
+</script>
+</body>
+</html>

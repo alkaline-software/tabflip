@@ -25,6 +25,13 @@ pub struct Config {
     /// Whether the item stands in the menu bar. Without it, Settings are
     /// reached by opening tabflip again from Finder or Spotlight.
     pub menu_bar_icon: bool,
+    /// The item's clicks swapped: the menu on a left click, Settings on
+    /// a right one.
+    pub menu_bar_swap: bool,
+    /// The window's language: "system", or a code the window has
+    /// (`i18n::CHOICES`). On a Mac the app's own `AppleLanguages` is the
+    /// setting itself, and this follows it.
+    pub language: String,
     /// Whether a newer release is looked for once a day.
     pub check_updates: bool,
     /// When a newer release was last looked for, Unix seconds; 0 = never.
@@ -33,7 +40,7 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120, size: Size::default().to_config(), highlight: look::DEFAULT_HIGHLIGHT.into(), menu_bar_icon: true, check_updates: true, last_update_check: 0 }
+        Self { shortcut: Shortcut::default().to_config(), appear_delay_ms: 120, size: Size::default().to_config(), highlight: look::DEFAULT_HIGHLIGHT.into(), menu_bar_icon: true, menu_bar_swap: false, language: "system".into(), check_updates: true, last_update_check: 0 }
     }
 }
 
@@ -138,7 +145,8 @@ mod tests {
     fn missing_fields_take_defaults() {
         let c: Config = serde_json::from_str(r#"{"shortcut":"alt-tab"}"#).unwrap();
         assert_eq!(c.appear_delay_ms, 120);
-        assert!(c.menu_bar_icon && c.check_updates);
+        assert!(c.menu_bar_icon && c.check_updates && !c.menu_bar_swap);
+        assert_eq!(c.language, "system");
         assert_eq!(c.shortcut().to_config(), "alt-tab");
     }
 

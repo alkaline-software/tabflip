@@ -1,5 +1,65 @@
 # Changelog
 
+## v0.2.0
+
+tabflip takes the look of Alkaline Software's family, speaks eight
+languages, and gets its own icon.
+
+- **The icon.** A stack of three windows fanned as a hand flips through
+  them, the front one lavender, on the studio's cream, drawn in the
+  manner of Emaki's and Kotoba's icons. The menu bar item is the same
+  stack as a template image the system tints.
+- **Lavender.** The accent of Settings is lavender, a hue of the
+  family's wheel halfway between Emaki's periwinkle and orchid, in a
+  light and a dark shade that read on either page.
+- **Languages.** Settings speak English, Chinese (Simplified and
+  Traditional), Japanese, Korean, French, German and Spanish, following
+  the system by default; a list at the right of General's title picks
+  one, which takes at once and is the app's own language in System
+  Settings, Language & Region, Applications too. The list of windows is
+  untouched: each window's own title, its app's own name.
+- **The menu bar item.** A left click opens Settings; a right click
+  shows the system's own menu of the sections, each with its icon, and
+  Quit. **Swap clicks** in General swaps the two.
+- **Accessibility is asked by Allow**, never unasked at launch: the
+  first press asks the system's own question, a later one opens Privacy
+  & Security. The row says Allowed the moment it is given.
+- **Keys on caps.** ⌘ ⌥ ⇧ ⌃ in the shortcut are drawn as icons on their
+  caps, level with the letters.
+- **About** is the family's title card: "Alkaline Software presents",
+  the icon, the name in Optima and the accent, the version, and the
+  studio's owners.
+- **⌘` goes back.** The shortcut's modifiers with ` move up the list,
+  as ⇧ with the shortcut's key does.
+- **The list no longer shakes.** Its rows were 2 points taller than
+  their scroller (the stack's hairline edge was not counted), so a move
+  to the first or last row scrolled the whole list by that much, and
+  the next round opened where the last one left off. The highlight now
+  slides on gpui's own animation clock at the display's rate (gpui held
+  an inactive window, which the list always is, to 30 frames a second),
+  over 150 ms with a gentler ease, and a row's words take the
+  highlight's colour only as far as the plate covers them.
+- **Motion.** The rail's dots and the permission's state come and go
+  over a moment; the language's list rises in and fades out; the window
+  fades into a new language.
+
+New settings in `config.json`: `"menu_bar_swap"` (default `false`) and
+`"language"` (default `"system"`).
+
+For developers:
+
+- `docs/design.md` is tabflip's design standard, written from the
+  studio's constitution: the palette, the type, the icons, the app icon,
+  the list, the window, the menu bar, motion, languages, probing.
+- `scripts/icon/icon.html` draws the icon on a canvas with proofs of
+  every size and candidates (`VARIANT`); `scripts/make-icon.sh` renders
+  every size on its own pixels through WebKit. `draw.swift` is gone.
+- `i18n.rs` and `locales/words.json`: every word through `t`/`tf`;
+  `cargo test -p tabflip-app` fails on a phrase missing anywhere.
+- Probes: `TABFLIP_LANG`, `TABFLIP_APPEARANCE`, and `TABFLIP_GO` steps
+  (`dark`, `pick:language`, `untrusted`, `record`, `newer`, …) before a
+  `TABFLIP_SHOT_SETTINGS` picture.
+
 ## v0.1.3
 
 tabflip stays out of the Dock, and Settings are redrawn in the look
