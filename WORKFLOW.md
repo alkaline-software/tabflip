@@ -253,9 +253,12 @@ again (step 6).
   (`crates/tabflip-app/Cargo.toml`) is fixed from the first published
   release on. A change after it makes macOS treat tabflip as a new app,
   and everyone must allow Accessibility again.
-- v0.1.1 to v0.1.3 were tagged and built but never published (step 6 was
-  not run), so they stay drafts: `releases/latest` names the first
-  release that goes through step 6.
+- v0.1.0 to v0.1.3 were tagged and built but never published (step 6
+  was not run, the signer having no Developer ID then), and their drafts
+  held only CI's ad-hoc images, so they were deleted; the tags and the
+  changelog sections stay. A draft that will not be published is deleted
+  (`gh release delete vX.Y.Z --yes`): the public never sees a draft, but
+  it stands over the published releases in the maintainers' view.
 
 ## The pieces a release depends on
 
