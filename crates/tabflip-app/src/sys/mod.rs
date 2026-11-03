@@ -145,7 +145,7 @@ pub fn screen_height() -> f64 {
         .unwrap_or(800.)
 }
 
-/// Every other tabflip running as an app, the release's or the build's,
+/// Every other Tabflip running as an app, the release's or the build's,
 /// asked to quit, and made to if it is still there a few seconds on: two
 /// would each take the shortcut. The one opened last stays. Whether any
 /// was found is returned: a quitting copy gives the system its ⌘Tab back
@@ -199,7 +199,7 @@ pub fn in_dock(on: bool) {
     NSApplication::sharedApplication(mtm).setActivationPolicy(policy);
 }
 
-/// Whether tabflip opens when the person logs in, as System Settings'
+/// Whether Tabflip opens when the person logs in, as System Settings'
 /// Login Items lists it.
 pub fn launches_at_login() -> bool {
     use objc2_service_management::{SMAppService, SMAppServiceStatus};
@@ -215,7 +215,7 @@ pub fn set_launch_at_login(on: bool) -> Result<(), String> {
 
 // The window's language. On a Mac an app's language is its own
 // `AppleLanguages` in its defaults, which System Settings, Language &
-// Region, Applications writes. tabflip's setting is the same one.
+// Region, Applications writes. Tabflip's setting is the same one.
 mod languages {
     use objc2::runtime::AnyObject;
     use objc2_foundation::{NSArray, NSBundle, NSString, NSUserDefaults};
@@ -265,7 +265,7 @@ pub fn system_languages() -> Vec<String> {
     objc2_foundation::NSLocale::preferredLanguages().iter().map(|s| s.to_string()).collect()
 }
 
-/// The language the app was given of its own, if any: by tabflip's
+/// The language the app was given of its own, if any: by Tabflip's
 /// setting or by System Settings.
 pub fn own_language() -> Option<String> {
     languages::own()

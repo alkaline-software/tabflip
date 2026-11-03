@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>tabflip App Icon</title>
+<title>Tabflip App Icon</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -39,7 +39,7 @@
 </style>
 </head>
 <body>
-<h1>tabflip App Icon</h1>
+<h1>Tabflip App Icon</h1>
 <div id="cards"></div>
 <div class="card usage">
   <div class="label">
@@ -55,7 +55,7 @@
 <script>
 // The icon is drawn in a 100-unit box. `bleed` fills the whole canvas as a square, opaque to its corners: the .icns, since macOS masks every app icon to its own rounded square and shows anything transparent as a gray border. Otherwise the body is an inset squircle with a margin and a shadow: the PNGs the window shows.
 //
-// The navy and the amber are the studio's and the same in every icon; tabflip's carries no spark, which crowded the stack (the old candidates still draw it in VIOLET). ACCENT is tabflip's sapphire at its dark shade, which fills the chosen window and stands clear of the navy. The ground is the studio's cream with a fifth of the accent in it (`ground`): ACCENT_LIGHT and ACCENT_DARK are the accent's base shades in the two appearances (docs/design.md, The accent).
+// The navy and the amber are the studio's and the same in every icon; Tabflip's carries no spark, which crowded the stack (the old candidates still draw it in VIOLET). ACCENT is Tabflip's sapphire at its dark shade, which fills the chosen window and stands clear of the navy. The ground is the studio's cream with a fifth of the accent in it (`ground`): ACCENT_LIGHT and ACCENT_DARK are the accent's base shades in the two appearances (docs/design.md, The accent).
 const NAVY = '#2b2556', AMBER = '#ffb83e', VIOLET = '#6a3fd9', ACCENT = '#7daeec', PAPER = '#ffffff';
 const ACCENT_LIGHT = '#2A69B4', ACCENT_DARK = '#7DAEEC';
 const CREAM = ['#fdf8ee', '#f1e4d0'];   // the studio's ground, top left to bottom right
@@ -375,7 +375,7 @@ for (const id of ['bar-dark', 'bar-light']) {
   const bar = document.getElementById(id);
   const app = document.createElement('div'); app.className = 'org';
   app.appendChild(makeCanvas(ICON, 48, { bleed: true }));
-  const t = document.createElement('span'); t.textContent = 'tabflip';
+  const t = document.createElement('span'); t.textContent = 'Tabflip';
   app.appendChild(t);
   const m = document.createElement('canvas'); m.className = 'template';
   drawTemplate(m, Math.round(18 * (window.devicePixelRatio || 1)));

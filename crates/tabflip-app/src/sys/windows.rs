@@ -6,7 +6,7 @@
 //! whether they are minimized. Which window is in front of which comes
 //! from the window server's list of what is on screen, which gives window
 //! numbers and owners without Screen Recording access; the titles are
-//! Accessibility's, so that is the one permission tabflip needs.
+//! Accessibility's, so that is the one permission Tabflip needs.
 
 use objc2_app_kit::{NSApplicationActivationPolicy, NSRunningApplication, NSWorkspace};
 use objc2_foundation::{NSArray, NSDictionary, NSNumber, NSString};

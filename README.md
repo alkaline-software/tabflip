@@ -1,8 +1,8 @@
-# tabflip
+# Tabflip
 
 **Switch between windows, not apps.**
 
-The Mac's ⌘Tab moves between apps. With two Chrome windows open, one on Gmail and one on Facebook, it can't take you to either one. tabflip can: hold ⌘ and press Tab, and a small list shows every window, each with its app's icon and a word or two for what is in it.
+The Mac's ⌘Tab moves between apps. With two Chrome windows open, one on Gmail and one on Facebook, it can't take you to either one. Tabflip can: hold ⌘ and press Tab, and a small list shows every window, each with its app's icon and a word or two for what is in it.
 
 ```
  ◉  Gmail                Google Chrome
@@ -15,9 +15,9 @@ Let go of ⌘ and that window comes to the front. A quick ⌘Tab goes straight t
 
 ## Install
 
-Download the disk image from the [latest release](https://github.com/alkaline-software/tabflip/releases/latest) and drag tabflip to Applications: `tabflip-mac-arm64.dmg` for Apple silicon, `tabflip-mac-x64.dmg` for an Intel Mac.
+Download the disk image from the [latest release](https://github.com/alkaline-software/tabflip/releases/latest) and drag Tabflip to Applications: `tabflip-mac-arm64.dmg` for Apple silicon, `tabflip-mac-x64.dmg` for an Intel Mac.
 
-tabflip lives in the menu bar. Its Settings ask for **Accessibility**, which it needs to read window titles, bring a window forward, and see the shortcut in every app. That is the only permission it asks for: no Screen Recording, and nothing leaves the Mac. In Settings you can pick another shortcut, the list's size and accent color, and the language; tabflip updates itself from About at a press.
+Tabflip lives in the menu bar. Its Settings ask for **Accessibility**, which it needs to read window titles, bring a window forward, and see the shortcut in every app. That is the only permission it asks for: no Screen Recording, and nothing leaves the Mac. In Settings you can pick another shortcut, the list's size and accent color, and the language; Tabflip updates itself from About at a press.
 
 ## Building it
 

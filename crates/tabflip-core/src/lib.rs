@@ -1,4 +1,4 @@
-//! tabflip's core: everything that needs neither a window nor the OS.
+//! Tabflip's core: everything that needs neither a window nor the OS.
 //!
 //! The app (`tabflip-app`) feeds this crate what it reads from macOS and
 //! does what it is told back. Every rule about which window comes first,

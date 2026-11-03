@@ -4,7 +4,7 @@ How to look at a state of the list or of Settings from a script, without the per
 
 ## Rules
 
-- Probe with a copy of its own, never the copy the person is using: `TABFLIP_HOME` at a scratch folder. A copy with its own home ends no other tabflip at launch (`docs/platform.md`, One tabflip at a time).
+- Probe with a copy of its own, never the copy the person is using: `TABFLIP_HOME` at a scratch folder. A copy with its own home ends no other Tabflip at launch (`docs/platform.md`, One Tabflip at a time).
 - None of the probes needs a permission: a process may take a picture of its own windows without Screen Recording access, and the list's sample rows need no Accessibility.
 - Say what was checked and what was not. A synthetic click does not reach a click handler in a background window, so a picture of the state a click leads to does not show the click works. A key the person presses goes through the tap, which a probe copy without Accessibility does not have.
 
@@ -44,7 +44,7 @@ prints the windows in the switcher's order with their labels, window numbers and
 
 A speed-up starts from a number and ends with another. The stopwatch goes in a copy and comes out when it is done; none is kept.
 
-- **At rest:** `top -pid <pid> -stats cpu,idlew,mem`, with Settings closed and open. tabflip at rest is at about 0% with a few wakeups a second.
+- **At rest:** `top -pid <pid> -stats cpu,idlew,mem`, with Settings closed and open. Tabflip at rest is at about 0% with a few wakeups a second.
 - **A frame:** the time from the top of `render` to the next frame (`window.on_next_frame`). A hover draws the window whole, so whatever `render` calls costs that much at every hover. A frame has about 16 ms; a frame that came back at 16 ms waited for the display, not for the app.
 - **A wait outside a frame:** a timer of 5 ms on the main thread that prints any gap over 30 ms. It finds a slow question to the system that no frame shows.
 - **A round:** the dev log's `looked:` line says how many apps were asked and how long the look took; the list shows from the windows last seen while it runs.

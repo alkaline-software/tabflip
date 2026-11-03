@@ -2,13 +2,13 @@
 
 ## What this is
 
-**tabflip** is a macOS window switcher (Rust and GPUI, `crates/`). Hold the shortcut (⌘Tab by default) and a vertical list of every window shows, each row an app icon, a word or two for the window, and the app's name. Let go and that exact window comes to the front. That is all it does. It is a stand-alone app with no code or runtime tie to any other project.
+**Tabflip** is a macOS window switcher (Rust and GPUI, `crates/`). Hold the shortcut (⌘Tab by default) and a vertical list of every window shows, each row an app icon, a word or two for the window, and the app's name. Let go and that exact window comes to the front. That is all it does. It is a stand-alone app with no code or runtime tie to any other project.
 
 The one idea: **the core decides, the app carries out.** Every rule about which window comes first, what a row says and what a key does is a pure function or a state machine in `tabflip-core`, with tests. The app reads the Mac, hands the core plain data, and does the `Effect` it gets back, so the behavior is tested without a Mac and a change of behavior starts as a core test (`docs/switcher.md`).
 
 ## The standard
 
-tabflip is an Alkaline Software product, held to the studio's standard: minimal, calm, intuitive, finished in every state. `docs/design.md` is that standard in tabflip's own terms (its sapphire accent, its icon, its window, its list, the menu bar item, motion, languages), and every change a person can see meets it unasked. Read it before touching anything a person sees. Three of its rules hold in every session:
+Tabflip is an Alkaline Software product, held to the studio's standard: minimal, calm, intuitive, finished in every state. `docs/design.md` is that standard in Tabflip's own terms (its sapphire accent, its icon, its window, its list, the menu bar item, motion, languages), and every change a person can see meets it unasked. Read it before touching anything a person sees. Three of its rules hold in every session:
 
 - **Nothing jumps.** What appears, goes, opens, closes, grows or moves does so over a moment, with the pattern its neighbors use.
 - **Every word a person sees goes through `i18n::t`** (or `tf`) and is in `locales/words.json` in every language; `cargo test -p tabflip-app` fails otherwise.
@@ -17,7 +17,7 @@ tabflip is an Alkaline Software product, held to the studio's standard: minimal,
 ## Rules that hold everywhere
 
 - **The system's ⌘Tab is always given back**: on at launch before anything can fail, at quit, on a signal and in the panic hook (`docs/platform.md`).
-- **One tabflip runs at a time**; a probe copy with its own `TABFLIP_HOME` ends none (`docs/platform.md`).
+- **One Tabflip runs at a time**; a probe copy with its own `TABFLIP_HOME` ends none (`docs/platform.md`).
 - **The key tap runs on a thread of its own, and its callback only matches and forwards** (`docs/platform.md`).
 - **The main thread never waits on another app**: every Accessibility question runs on the background executor, each with a 0.25 s timeout (`docs/platform.md`).
 - **Nothing slow is asked while a frame is built**: what the system has is found once, at launch (`docs/design.md`, Frames).

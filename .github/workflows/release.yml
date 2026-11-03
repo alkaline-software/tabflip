@@ -78,7 +78,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v3
         with:
-          name: tabflip ${{ github.ref_name }}
+          name: Tabflip ${{ github.ref_name }}
           body_path: notes.md
           files: upload/*
           # A draft until the notarized images are put over these.

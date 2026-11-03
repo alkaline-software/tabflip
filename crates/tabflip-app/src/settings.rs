@@ -1,4 +1,4 @@
-//! Settings, tabflip's only window, drawn as Alkaline Software's other
+//! Settings, Tabflip's only window, drawn as Alkaline Software's other
 //! apps draw theirs (`docs/design.md`): a rail of sections at the left,
 //! under the window's traffic lights, and the chosen section's groups of
 //! rows on cards at the right. General is the shortcut, how the app
@@ -8,8 +8,8 @@
 //! window's language is chosen from a list at the right of General's
 //! title.
 //!
-//! Opened from the menu bar item, by opening tabflip again, and by itself
-//! while Accessibility is missing. tabflip is in the Dock exactly while
+//! Opened from the menu bar item, by opening Tabflip again, and by itself
+//! while Accessibility is missing. Tabflip is in the Dock exactly while
 //! the window is open (`sys::in_dock`).
 
 use std::cell::RefCell;
@@ -210,7 +210,7 @@ pub fn show(section: Option<&'static str>, cx: &mut App) {
     let opened = cx.open_window(
         WindowOptions {
             window_bounds: Some(WindowBounds::Windowed(bounds)),
-            titlebar: Some(TitlebarOptions { title: Some("tabflip".into()), appears_transparent: true, traffic_light_position: Some(point(px(17.), px(19.))) }),
+            titlebar: Some(TitlebarOptions { title: Some("Tabflip".into()), appears_transparent: true, traffic_light_position: Some(point(px(17.), px(19.))) }),
             window_min_size: Some(WINDOW_MIN),
             is_minimizable: true,
             focus: true,
@@ -351,7 +351,7 @@ impl Settings {
     /// The rail of sections at the window's left, under its traffic
     /// lights: an icon and a name per section, the chosen one on a plate.
     /// General wears a dot while Accessibility is missing, and About
-    /// while a newer tabflip waits; each comes and goes in motion.
+    /// while a newer Tabflip waits; each comes and goes in motion.
     fn rail(&self, current: &'static str, cx: &mut Context<Self>) -> AnyElement {
         let theme = cx.theme().clone();
         let c = self.controller.read(cx);
@@ -417,7 +417,7 @@ impl Settings {
         } else if c.system_switcher_stuck {
             (t("macOS kept its own ⌘Tab; try ⌥Tab."), true)
         } else if shortcut.is_command_tab() {
-            (t("Replaces the Mac's own ⌘Tab while tabflip runs."), false)
+            (t("Replaces the Mac's own ⌘Tab while Tabflip runs."), false)
         } else {
             (t("Hold it, press again to move down, let go to switch."), false)
         };
@@ -486,7 +486,7 @@ impl Settings {
                 .into_any_element()
         };
         let access = self.arrive("access", listening, div().w(PERMIT_W).child(access), cx);
-        let access_note: &'static str = if listening { t("To see every window and switch to it.") } else { t("Turn tabflip on in the list; it starts by itself.") };
+        let access_note: &'static str = if listening { t("To see every window and switch to it.") } else { t("Turn Tabflip on in the list; it starts by itself.") };
 
         vec![
             group(Some(t("Switcher")), vec![line(t("Shortcut"), Some(shortcut_note), shortcut_control, &theme)], &theme),
@@ -494,7 +494,7 @@ impl Settings {
                 Some(t("App")),
                 vec![
                     line(t("Launch at login"), login_note, login, &theme),
-                    line(t("Show in menu bar"), Some(div().child(t("When hidden, open tabflip again to come back here.")).into_any_element()), menu_bar, &theme),
+                    line(t("Show in menu bar"), Some(div().child(t("When hidden, open Tabflip again to come back here.")).into_any_element()), menu_bar, &theme),
                     line(t("Swap clicks"), Some(div().child(t("The menu on a left click, Settings on a right one.")).into_any_element()), swap, &theme),
                 ],
                 &theme,
@@ -601,7 +601,7 @@ impl Settings {
         )]
     }
 
-    /// About, the same in every product: the title card, set as a film's first one is; under it the pills to the source and the release's notes; then the updates, what a check found with the one button that checks or installs, and whether to look once a day. The update is fetched and put in place by tabflip itself, which then opens again as the new version.
+    /// About, the same in every product: the title card, set as a film's first one is; under it the pills to the source and the release's notes; then the updates, what a check found with the one button that checks or installs, and whether to look once a day. The update is fetched and put in place by Tabflip itself, which then opens again as the new version.
     fn about(&mut self, cx: &mut Context<Self>) -> Vec<AnyElement> {
         let theme = cx.theme().clone();
         let current = update::current_version();
@@ -628,7 +628,7 @@ impl Settings {
             .pb(px(28.))
             .child(weave(t("{studio} presents"), vec![("studio", studio)], h_flex().text_size(px(14.)).text_color(theme.muted_foreground)))
             .child(div().id("about-icon").mt(px(18.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site.clone()).child(img("icon/app-large.png").size(px(88.)).flex_shrink_0()))
-            .child(div().id("about-name").mt(px(6.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site).child(wordmark("tabflip", 42., theme.primary, cx)))
+            .child(div().id("about-name").mt(px(6.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site).child(wordmark("Tabflip", 42., theme.primary, cx)))
             .child(div().mt(px(4.)).text_size(px(12.5)).text_color(theme.muted_foreground).child(tf("Version {v}", &[("v", &current)])))
             .into_any_element();
         let go = |id: &'static str, icon: &'static str, label: &'static str, url: String| small_pill(id, icon, label, Press::Quiet, false, &theme).h(px(28.)).on_click(move |_, _, _| sys::open_url(&url));
@@ -641,7 +641,7 @@ impl Settings {
             match u.progress {
                 Some((done, Some(total))) if total > 0 => tf("Downloading… {p}%", &[("p", &(done * 100 / total))]),
                 Some(_) => t("Downloading…").into(),
-                None => t("Installing… tabflip restarts by itself.").into(),
+                None => t("Installing… Tabflip restarts by itself.").into(),
             }
         } else if !u.install_error.is_empty() {
             tf("The update did not go through: {e}", &[("e", &u.install_error)])

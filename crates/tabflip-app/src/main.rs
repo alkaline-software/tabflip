@@ -1,4 +1,4 @@
-//! tabflip: switch between windows, not apps.
+//! Tabflip: switch between windows, not apps.
 //!
 //! A menu bar app: an item in the menu bar and no Dock icon, except
 //! while Settings are open. Hold the shortcut (⌘Tab by default) and a list
@@ -19,21 +19,21 @@ use gpui::*;
 actions!(tabflip, [Quit, Hide, HideOthers, ShowAll, CloseWindow, OpenSettings, Escape]);
 
 /// The app's menu at the screen's top, there while Settings are open and
-/// tabflip is in the Dock: the Mac's own choices for an app, in the
+/// Tabflip is in the Dock: the Mac's own choices for an app, in the
 /// language in use.
 pub fn app_menus() -> Vec<Menu> {
     let t = i18n::t;
     vec![Menu {
-        name: "tabflip".into(),
+        name: "Tabflip".into(),
         disabled: false,
         items: vec![
             MenuItem::action(t("Settings…"), OpenSettings),
             MenuItem::separator(),
-            MenuItem::action(t("Hide tabflip"), Hide),
+            MenuItem::action(t("Hide Tabflip"), Hide),
             MenuItem::action(t("Hide Others"), HideOthers),
             MenuItem::action(t("Show All"), ShowAll),
             MenuItem::separator(),
-            MenuItem::action(t("Quit tabflip"), Quit),
+            MenuItem::action(t("Quit Tabflip"), Quit),
         ],
     }]
 }
@@ -46,12 +46,12 @@ pub fn menu_lines() -> Vec<sys::status_item::MenuLine> {
         _ => &[],
     };
     let mut lines: Vec<sys::status_item::MenuLine> = settings::SECTIONS.iter().map(|&(key, title, path)| sys::status_item::MenuLine { key, title: i18n::t(title), icon: icon(path), keys: "", gap: key == "about" }).collect();
-    lines.push(sys::status_item::MenuLine { key: "quit", title: i18n::t("Quit tabflip"), icon: icon("icons/logout.svg"), keys: "q", gap: true });
+    lines.push(sys::status_item::MenuLine { key: "quit", title: i18n::t("Quit Tabflip"), icon: icon("icons/logout.svg"), keys: "q", gap: true });
     lines
 }
 
 fn main() {
-    // The system's ⌘Tab is put back on before anything else: a tabflip
+    // The system's ⌘Tab is put back on before anything else: a Tabflip
     // that crashed or was killed with it off leaves it off.
     sys::private::set_system_switcher(true);
     restore_on_exit();
@@ -82,7 +82,7 @@ fn main() {
         gpui_component::init(cx);
         i18n::set(&i18n::chosen());
         sys::stay_in_menu_bar();
-        // One tabflip at a time, the one opened last: two would each take
+        // One Tabflip at a time, the one opened last: two would each take
         // the shortcut. A probe copy, with a home of its own, leaves the
         // others be.
         let ended_others = std::env::var_os("TABFLIP_HOME").is_none() && sys::end_other_tabflips();
@@ -244,7 +244,7 @@ fn main() {
     });
 }
 
-/// The system's ⌘Tab put back when tabflip is ended by a signal or a
+/// The system's ⌘Tab put back when Tabflip is ended by a signal or a
 /// panic, as at quit.
 fn restore_on_exit() {
     extern "C" fn on_signal(sig: i32) {

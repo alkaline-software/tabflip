@@ -16,7 +16,7 @@ pub fn focus(w: &Window) {
         w.element.set_bool("AXMinimized", false);
     }
     // The window server's way first: it makes this window the key one even
-    // though tabflip, a background app, asks. macOS 14's cooperative
+    // though Tabflip, a background app, asks. macOS 14's cooperative
     // activation lets an app in front decline the public request.
     let fronted = w.id.is_some_and(|id| super::private::bring_to_front(w.pid, id));
     w.element.perform("AXRaise");

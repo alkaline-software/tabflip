@@ -2,17 +2,18 @@
 
 ## v0.2.4
 
-A sapphire tabflip, a new icon, an About like the studio's other apps, and a quicker tabflip.
+Tabflip, with a capital T, in sapphire, with a new icon, an About like the studio's other apps, and quicker.
 
-1. **Sapphire.** The list's first and default color is a deep, calm blue in place of the Mac's bright one, and Settings wear it as their accent. The row that picks it is now called Accent, and its seven colors are redrawn as one family at the sapphire's weight; Red is gone, and a saved Red becomes Blue.
-2. **The icon** is two windows, the one just used and the one chosen, the same two cards as the menu bar item, drawn smaller in its square as the studio's other icons are, without the spark, on the studio's cream washed with sapphire.
-3. **About holds the updates.** The title card, then GitHub and the release's notes, then Updates and Check automatically on one card; Updates is no longer a section of its own, and the dot for a newer version is on About.
-4. **Settings are one size with the studio's other apps**, 820 by 600.
-5. **Typing stays quick while tabflip works.** It watches the keyboard on a thread of its own, so no key anywhere on the Mac waits for tabflip to draw.
-6. **The list comes up on time.** It draws its first frame the moment it is due, where it came about 45 ms late, and every slide and fade runs at the display's rate from the first round on.
-7. **tabflip leaves other apps alone.** It asks the apps for their windows only when you press the shortcut, not at every app switch, and with Settings open it no longer wakes twenty times a second.
-8. **About draws at once.** It looked up every installed font each time it was drawn, which held each frame for over a tenth of a second.
-9. **An app that hangs no longer slows tabflip**: the window in front is asked about off the main thread.
+1. **Tabflip.** The name is written with a capital, as the studio's other apps' are: in the Dock, the menus, Settings and the disk image.
+2. **Sapphire.** The list's first and default color is a deep, calm blue in place of the Mac's bright one, and Settings wear it as their accent. The row that picks it is now called Accent, and its seven colors are redrawn as one family at the sapphire's weight; Red is gone, and a saved Red becomes Blue.
+3. **The icon** is two windows, the one just used and the one chosen, the same two cards as the menu bar item, drawn smaller in its square as the studio's other icons are, without the spark, on the studio's cream washed with sapphire.
+4. **About holds the updates.** The title card, then GitHub and the release's notes, then Updates and Check automatically on one card; Updates is no longer a section of its own, and the dot for a newer version is on About.
+5. **Settings are one size with the studio's other apps**, 820 by 600.
+6. **Typing stays quick while Tabflip works.** It watches the keyboard on a thread of its own, so no key anywhere on the Mac waits for Tabflip to draw.
+7. **The list comes up on time.** It draws its first frame the moment it is due, where it came about 45 ms late, and every slide and fade runs at the display's rate from the first round on.
+8. **Tabflip leaves other apps alone.** It asks the apps for their windows only when you press the shortcut, not at every app switch, and with Settings open it no longer wakes twenty times a second.
+9. **About draws at once.** It looked up every installed font each time it was drawn, which held each frame for over a tenth of a second.
+10. **An app that hangs no longer slows Tabflip**: the window in front is asked about off the main thread.
 
 ## v0.2.3
 

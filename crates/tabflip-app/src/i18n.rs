@@ -1,5 +1,5 @@
 //! The window's words in the person's language: the one they chose, or
-//! the first of the system's preferred languages that tabflip speaks,
+//! the first of the system's preferred languages that Tabflip speaks,
 //! else English.
 //!
 //! English is the key. `locales/words.json` holds, for each English
@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
 
-/// The languages tabflip speaks besides English: the code in the table,
+/// The languages Tabflip speaks besides English: the code in the table,
 /// the toolkit's own code for it, and the name the bundle declares
 /// (`CFBundleLocalizations`, so System Settings offers each per app).
 pub const LANGS: &[(&str, &str, &str)] = &[
@@ -50,7 +50,7 @@ static WORDS: RwLock<Option<(&'static str, HashMap<&'static str, &'static str>)>
 
 /// The language for a system's preferred languages (BCP 47, as macOS
 /// gives them: `zh-Hans-CN`, `zh-HK`, `fr-CA`), in their order: the
-/// first tabflip speaks, else English. Chinese is told apart by its
+/// first Tabflip speaks, else English. Chinese is told apart by its
 /// script, or where none is given, by its region.
 pub fn pick<'a>(preferred: impl IntoIterator<Item = &'a str>) -> &'static str {
     for tag in preferred {

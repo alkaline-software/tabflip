@@ -1,4 +1,4 @@
-//! tabflip's item in the menu bar: it has no Dock icon and no window most
+//! Tabflip's item in the menu bar: it has no Dock icon and no window most
 //! of the time, so this is where Settings and Quit are found.
 //!
 //! The item is the icon's stack as a template image
@@ -169,7 +169,7 @@ pub fn install(lines: &[MenuLine], menu_on_left: bool, shown: bool) -> Option<Un
             image.setTemplate(true);
             button.setImage(Some(&image));
         }
-        button.setToolTip(Some(&NSString::from_str("tabflip")));
+        button.setToolTip(Some(&NSString::from_str("Tabflip")));
         unsafe {
             button.setTarget(Some(&target));
             button.setAction(Some(sel!(clicked:)));
@@ -184,7 +184,7 @@ pub fn install(lines: &[MenuLine], menu_on_left: bool, shown: bool) -> Option<Un
 
 /// Which click shows the menu, and whether the item is in the bar at
 /// all: both change at once. Hidden, Settings are reached by opening
-/// tabflip again (`on_reopen` in main.rs).
+/// Tabflip again (`on_reopen` in main.rs).
 pub fn set(menu_on_left: bool, shown: bool) {
     MENU_ON_LEFT.store(menu_on_left, Ordering::Relaxed);
     ITEM.with(|i| {

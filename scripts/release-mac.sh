@@ -46,13 +46,13 @@ TARGET_FLAG=(); [[ -n "$TARGET" ]] && TARGET_FLAG=(--target "$TARGET")
 if (( BUILD )); then
   cargo build --release --locked -p tabflip-app "${TARGET_FLAG[@]}"
 fi
-rm -rf dist/tabflip.app
+rm -rf dist/Tabflip.app
 cargo packager --release -p tabflip-app "${TARGET_FLAG[@]}" --formats app
-APP=dist/tabflip.app
+APP=dist/Tabflip.app
 [[ -d "$APP" ]] || { echo "packager left no $APP" >&2; exit 1; }
 
 # The hardened runtime and a secure timestamp are what notarization
-# requires. tabflip asks for no entitlements: Accessibility is granted by
+# requires. Tabflip asks for no entitlements: Accessibility is granted by
 # the person, not declared.
 if [[ "$IDENTITY" == "-" ]]; then
   codesign --force --deep --sign - "$APP"
@@ -65,7 +65,7 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 # layout lives in the volume's .DS_Store, and only Finder writes one Finder
 # will honor), then hdiutil compresses it read-only. The window is 660x420
 # points over scripts/dmg/background.png, which is that size at 2x.
-VOLNAME="tabflip v$VERSION"
+VOLNAME="Tabflip v$VERSION"
 STAGE=dist/dmg-staging
 RW=dist/tabflip-rw.dmg
 detach_stale() {
@@ -77,7 +77,7 @@ detach_stale() {
 detach_stale
 rm -rf "$STAGE" "$RW" "$OUT"
 mkdir -p "$STAGE/.background" "$(dirname "$OUT")"
-cp -R "$APP" "$STAGE/tabflip.app"
+cp -R "$APP" "$STAGE/Tabflip.app"
 ln -s /Applications "$STAGE/Applications"
 cp scripts/dmg/background.png "$STAGE/.background/background.png"
 mkdir -p "$STAGE/.fseventsd" && touch "$STAGE/.fseventsd/no_log"
@@ -85,7 +85,9 @@ mkdir -p "$STAGE/.fseventsd" && touch "$STAGE/.fseventsd/no_log"
 # just built, so it is tried a few times.
 made=""
 for attempt in 1 2 3 4 5; do
-  if hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -ov -format UDRW "$RW"; then
+  # HFS+, which is case-insensitive: a copy from before the name was Tabflip
+  # looks for tabflip.app in the image it updates from (update::APP).
+  if hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -fs HFS+ -ov -format UDRW "$RW"; then
     made=1
     break
   fi
@@ -108,7 +110,7 @@ tell application "Finder"
     set icon size of opts to 128
     set text size of opts to 14
     set background picture of opts to file ".background:background.png"
-    set position of item "tabflip.app" of container window to {165, 260}
+    set position of item "Tabflip.app" of container window to {165, 260}
     set position of item "Applications" of container window to {495, 260}
     -- Housekeeping items sit far outside the window for anyone showing hidden files.
     repeat with n in {".background", ".fseventsd", ".Trashes", ".DS_Store"}
@@ -127,7 +129,7 @@ APPLESCRIPT
 sync
 hdiutil detach "$DEVICE" -force >/dev/null
 hdiutil convert -quiet "$RW" -format UDZO -imagekey zlib-level=9 -ov -o "$OUT"
-# Left in dist/, the bundle is a second tabflip for Launchpad and Spotlight.
+# Left in dist/, the bundle is a second Tabflip for Launchpad and Spotlight.
 rm -rf "$STAGE" "$RW" "$APP" dist/.cargo-packager
 if [[ "$IDENTITY" != "-" ]]; then
   codesign --force --sign "$IDENTITY" "$OUT"

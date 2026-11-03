@@ -2,7 +2,7 @@
 //! another app to the front, and switching the system's ⌘Tab off and on.
 //!
 //! Each is looked up by name when first used, so a macOS that renames one
-//! leaves tabflip running with that one thing missing, not unable to
+//! leaves Tabflip running with that one thing missing, not unable to
 //! start. AltTab, yabai and Hammerspoon use the same calls.
 
 use std::ffi::{c_char, c_void};

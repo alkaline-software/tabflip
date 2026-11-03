@@ -215,23 +215,23 @@
     "de": "{studio} präsentiert",
     "es": "{studio} presenta"
   },
-  "Quit tabflip": {
-    "zh-Hans": "退出 tabflip",
-    "zh-Hant": "結束 tabflip",
-    "ja": "tabflip を終了",
-    "ko": "tabflip 종료",
-    "fr": "Quitter tabflip",
-    "de": "tabflip beenden",
-    "es": "Salir de tabflip"
+  "Quit Tabflip": {
+    "zh-Hans": "退出 Tabflip",
+    "zh-Hant": "結束 Tabflip",
+    "ja": "Tabflip を終了",
+    "ko": "Tabflip 종료",
+    "fr": "Quitter Tabflip",
+    "de": "Tabflip beenden",
+    "es": "Salir de Tabflip"
   },
-  "Hide tabflip": {
-    "zh-Hans": "隐藏 tabflip",
-    "zh-Hant": "隱藏 tabflip",
-    "ja": "tabflip を非表示",
-    "ko": "tabflip 가리기",
-    "fr": "Masquer tabflip",
-    "de": "tabflip ausblenden",
-    "es": "Ocultar tabflip"
+  "Hide Tabflip": {
+    "zh-Hans": "隐藏 Tabflip",
+    "zh-Hant": "隱藏 Tabflip",
+    "ja": "Tabflip を非表示",
+    "ko": "Tabflip 가리기",
+    "fr": "Masquer Tabflip",
+    "de": "Tabflip ausblenden",
+    "es": "Ocultar Tabflip"
   },
   "Switcher": {
     "zh-Hans": "切换器",
@@ -278,14 +278,14 @@
     "de": "macOS behält sein ⌘Tab; versuchen Sie ⌥Tab.",
     "es": "macOS se ha quedado con su ⌘Tab; prueba ⌥Tab."
   },
-  "Replaces the Mac's own ⌘Tab while tabflip runs.": {
-    "zh-Hans": "tabflip 运行时取代 Mac 自己的 ⌘Tab。",
-    "zh-Hant": "tabflip 執行時取代 Mac 自己的 ⌘Tab。",
-    "ja": "tabflip の実行中は Mac の ⌘Tab に代わります。",
-    "ko": "tabflip가 실행되는 동안 Mac의 ⌘Tab을 대신합니다.",
-    "fr": "Remplace le ⌘Tab du Mac tant que tabflip tourne.",
-    "de": "Ersetzt das ⌘Tab des Mac, solange tabflip läuft.",
-    "es": "Sustituye el ⌘Tab del Mac mientras tabflip está abierto."
+  "Replaces the Mac's own ⌘Tab while Tabflip runs.": {
+    "zh-Hans": "Tabflip 运行时取代 Mac 自己的 ⌘Tab。",
+    "zh-Hant": "Tabflip 執行時取代 Mac 自己的 ⌘Tab。",
+    "ja": "Tabflip の実行中は Mac の ⌘Tab に代わります。",
+    "ko": "Tabflip가 실행되는 동안 Mac의 ⌘Tab을 대신합니다.",
+    "fr": "Remplace le ⌘Tab du Mac tant que Tabflip tourne.",
+    "de": "Ersetzt das ⌘Tab des Mac, solange Tabflip läuft.",
+    "es": "Sustituye el ⌘Tab del Mac mientras Tabflip está abierto."
   },
   "Hold it, press again to move down, let go to switch.": {
     "zh-Hans": "按住不放，再按一次向下移动，松开即切换。",
@@ -332,14 +332,14 @@
     "de": "Diese Taste kann nicht verwendet werden",
     "es": "Esa tecla no se puede usar"
   },
-  "When hidden, open tabflip again to come back here.": {
-    "zh-Hans": "隐藏后，再次打开 tabflip 即可回到这里。",
-    "zh-Hant": "隱藏後，再次打開 tabflip 即可回到這裡。",
-    "ja": "非表示のときは、tabflip をもう一度開くとここに戻れます。",
-    "ko": "숨긴 뒤에는 tabflip을 다시 열면 여기로 돌아옵니다.",
-    "fr": "Une fois masqué, rouvrez tabflip pour revenir ici.",
-    "de": "Ausgeblendet: tabflip erneut öffnen, um hierher zurückzukommen.",
-    "es": "Si está oculto, abre tabflip de nuevo para volver aquí."
+  "When hidden, open Tabflip again to come back here.": {
+    "zh-Hans": "隐藏后，再次打开 Tabflip 即可回到这里。",
+    "zh-Hant": "隱藏後，再次打開 Tabflip 即可回到這裡。",
+    "ja": "非表示のときは、Tabflip をもう一度開くとここに戻れます。",
+    "ko": "숨긴 뒤에는 Tabflip을 다시 열면 여기로 돌아옵니다.",
+    "fr": "Une fois masqué, rouvrez Tabflip pour revenir ici.",
+    "de": "Ausgeblendet: Tabflip erneut öffnen, um hierher zurückzukommen.",
+    "es": "Si está oculto, abre Tabflip de nuevo para volver aquí."
   },
   "The menu on a left click, Settings on a right one.": {
     "zh-Hans": "左键显示菜单，右键打开设置。",
@@ -359,14 +359,14 @@
     "de": "Um jedes Fenster zu sehen und dorthin zu wechseln.",
     "es": "Para ver cada ventana y cambiar a ella."
   },
-  "Turn tabflip on in the list; it starts by itself.": {
-    "zh-Hans": "在列表中打开 tabflip，它会自行启动。",
-    "zh-Hant": "在列表中打開 tabflip，它會自行啟動。",
-    "ja": "リストで tabflip をオンにすると、自動で始まります。",
-    "ko": "목록에서 tabflip을 켜면 저절로 시작됩니다.",
-    "fr": "Activez tabflip dans la liste ; il démarre tout seul.",
-    "de": "tabflip in der Liste einschalten; es startet von selbst.",
-    "es": "Activa tabflip en la lista; se pone en marcha solo."
+  "Turn Tabflip on in the list; it starts by itself.": {
+    "zh-Hans": "在列表中打开 Tabflip，它会自行启动。",
+    "zh-Hant": "在列表中打開 Tabflip，它會自行啟動。",
+    "ja": "リストで Tabflip をオンにすると、自動で始まります。",
+    "ko": "목록에서 Tabflip을 켜면 저절로 시작됩니다.",
+    "fr": "Activez Tabflip dans la liste ; il démarre tout seul.",
+    "de": "Tabflip in der Liste einschalten; es startet von selbst.",
+    "es": "Activa Tabflip en la lista; se pone en marcha solo."
   },
   "The list": {
     "zh-Hans": "列表",
@@ -602,14 +602,14 @@
     "de": "Das Update ist fehlgeschlagen: {e}",
     "es": "La actualización no se completó: {e}"
   },
-  "Installing… tabflip restarts by itself.": {
-    "zh-Hans": "正在安装… tabflip 会自动重新启动。",
-    "zh-Hant": "正在安裝… tabflip 會自動重新啟動。",
-    "ja": "インストール中… tabflip は自動で再起動します。",
-    "ko": "설치 중… tabflip가 자동으로 다시 시작됩니다.",
-    "fr": "Installation… tabflip redémarre tout seul.",
-    "de": "Installiere … tabflip startet von selbst neu.",
-    "es": "Instalando… tabflip se reiniciará solo."
+  "Installing… Tabflip restarts by itself.": {
+    "zh-Hans": "正在安装… Tabflip 会自动重新启动。",
+    "zh-Hant": "正在安裝… Tabflip 會自動重新啟動。",
+    "ja": "インストール中… Tabflip は自動で再起動します。",
+    "ko": "설치 중… Tabflip가 자동으로 다시 시작됩니다.",
+    "fr": "Installation… Tabflip redémarre tout seul.",
+    "de": "Installiere … Tabflip startet von selbst neu.",
+    "es": "Instalando… Tabflip se reiniciará solo."
   },
   "Version {v}": {
     "zh-Hans": "版本 {v}",

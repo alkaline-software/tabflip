@@ -1,7 +1,7 @@
 name: rust
 
 # The core's tests and an app build on every push and pull request.
-# tabflip is a Mac's alone, so macOS is the one runner.
+# Tabflip is a Mac's alone, so macOS is the one runner.
 on:
   push:
     branches: [main]

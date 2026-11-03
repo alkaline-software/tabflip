@@ -1,6 +1,6 @@
 # Release
 
-How a release of tabflip is cut, command by command: the version, the changelog, the checks before the tag, the tag, what CI builds, signing and notarizing the Mac images, publishing, installing, cleaning up, and redoing a release. tabflip is a Mac's alone, so a release is two disk images and nothing else. Each guard below is there because a release went wrong without it; "When something fails" says which.
+How a release of Tabflip is cut, command by command: the version, the changelog, the checks before the tag, the tag, what CI builds, signing and notarizing the Mac images, publishing, installing, cleaning up, and redoing a release. Tabflip is a Mac's alone, so a release is two disk images and nothing else. Each guard below is there because a release went wrong without it; "When something fails" says which.
 
 ## What a release is
 
@@ -68,7 +68,7 @@ It holds the commit to everything the tag will be held to: the version in `Cargo
 git push origin main
 gh run list --repo alkaline-software/tabflip --workflow rust --limit 1
 gh run watch <run-id> --repo alkaline-software/tabflip --exit-status
-git tag -a vX.Y.Z -m "tabflip vX.Y.Z"
+git tag -a vX.Y.Z -m "Tabflip vX.Y.Z"
 git push origin refs/tags/vX.Y.Z
 ```
 
@@ -110,12 +110,12 @@ Drag from the disk image, or:
 
 ```
 hdiutil attach dist/tabflip-mac-arm64.dmg
-ditto "/Volumes/tabflip vX.Y.Z/tabflip.app" /Applications/tabflip.app
-hdiutil detach "/Volumes/tabflip vX.Y.Z"
-open /Applications/tabflip.app
+ditto "/Volumes/Tabflip vX.Y.Z/Tabflip.app" /Applications/Tabflip.app
+hdiutil detach "/Volumes/Tabflip vX.Y.Z"
+open /Applications/Tabflip.app
 ```
 
-tabflip opens with no window and no Dock icon, only its item in the menu bar, and takes ⌘Tab as soon as Accessibility is given. The release build has its own entry in Privacy & Security ("tabflip"), apart from the dev build's ("tabflip dev"), so its first launch opens Settings on General, where Allow is. A later release, signed with the same Developer ID, keeps the grant. Two copies never run at once (`docs/platform.md`, One tabflip at a time): `scripts/dev-app.sh` quits an installed copy before opening the build, and step 8 hands back.
+Tabflip opens with no window and no Dock icon, only its item in the menu bar, and takes ⌘Tab as soon as Accessibility is given. The release build has its own entry in Privacy & Security ("Tabflip"), apart from the dev build's ("Tabflip dev"), so its first launch opens Settings on General, where Allow is. A later release, signed with the same Developer ID, keeps the grant. Two copies never run at once (`docs/platform.md`, One Tabflip at a time): `scripts/dev-app.sh` quits an installed copy before opening the build, and step 8 hands back.
 
 ### 8. Delete the compiled files
 
@@ -127,8 +127,8 @@ scripts/release-clean.sh
 
 - It runs `cargo clean`, which deletes `target/`: every build made while developing and for the release (debug, release, the Intel target), and with it the dev build's bundle.
 - It deletes `dist/`, the two disk images, which are on the release by now.
-- It asks Spotlight for every `tabflip.app` and fails if there is one other than `/Applications/tabflip.app`.
-- If the dev build was running it quits it, since it has no files left, and opens `/Applications/tabflip.app` in its place.
+- It asks Spotlight for every `Tabflip.app` and fails if there is one other than `/Applications/Tabflip.app`.
+- If the dev build was running it quits it, since it has no files left, and opens `/Applications/Tabflip.app` in its place.
 
 It refuses in two cases: the installed copy is not a notarized release, or `dist/` holds images of a version that is not published (a redo of the release wants them).
 
@@ -140,7 +140,7 @@ Delete the release and the tag on both sides, cancel a run still going (`gh run 
 gh release delete vX.Y.Z --yes --repo alkaline-software/tabflip
 git tag -d vX.Y.Z
 git push origin :refs/tags/vX.Y.Z
-git tag -a vX.Y.Z -m "tabflip vX.Y.Z"
+git tag -a vX.Y.Z -m "Tabflip vX.Y.Z"
 git push origin refs/tags/vX.Y.Z
 ```
 
@@ -148,14 +148,15 @@ The Mac images are built again from the new commit (step 5) and published again 
 
 ## What stays fixed
 
-The bundle identifier `com.alkalinesoftware.tabflip` (`crates/tabflip-app/Cargo.toml`) is fixed: a change makes macOS treat tabflip as a new app, and everyone must allow Accessibility again.
+- **The bundle identifier** `com.alkalinesoftware.tabflip` (`crates/tabflip-app/Cargo.toml`): a change makes macOS treat Tabflip as a new app, and everyone must allow Accessibility again.
+- **The names machines know, in lower case**: the repository, the release's asset names (`tabflip-mac-arm64.dmg`, which every copy out there fetches its update by), the settings folder, `TABFLIP_*`, the crates and the binary. The app's name is Tabflip, with a capital, everywhere a person reads it: the bundle (`Tabflip.app`), its menus, the disk image. It was tabflip until v0.2.4. A copy from before looks for `tabflip.app` in the image it updates from, so the image is a case-insensitive HFS+ volume (`release-mac.sh`), and that copy keeps its lowercase folder until its next update, which takes the new name (`update::placed_as`).
 
 ## The pieces a release carries
 
 - **The icon.** `scripts/icon/icon.html` is the drawing and `scripts/make-icon.sh` renders it into `crates/tabflip-app/assets/` (`docs/design.md`, The app icon). Change the drawing, run the script, rebuild, commit the assets.
-- **The disk image's background.** `scripts/dmg/background.png`, drawn by `scripts/dmg/background.py` (Pillow, LXGW WenKai Medium) on the window's page color with the sapphire: "Drag tabflip to Applications" and an arrow, 1320 by 840 at 2x for the 660 by 420 Finder window. Run the script only when the picture changes (`uv run --with pillow python3 scripts/dmg/background.py`); the PNG is committed.
+- **The disk image's background.** `scripts/dmg/background.png`, drawn by `scripts/dmg/background.py` (Pillow, LXGW WenKai Medium) on the window's page color with the sapphire: "Drag Tabflip to Applications" and an arrow, 1320 by 840 at 2x for the 660 by 420 Finder window. Run the script only when the picture changes (`uv run --with pillow python3 scripts/dmg/background.py`); the PNG is committed.
 - **The layout.** `release-mac.sh` mounts a read-write image and has Finder set the window, the 128 pt icons at 165 and 495, and the background, then converts it to a compressed read-only image. Only Finder writes a `.DS_Store` Finder honors, so the layout is not generated offline. This works on the GitHub macOS runners too.
-- **The update inside the app.** About in Settings fetches the newer version's image from the release's stable asset name (`update::download`), mounts it, copies `tabflip.app` beside the running bundle and swaps it in (`update::install`), then quits; the new app opens once the old process has ended. `tabflip --try-update <bundle>` does the same to a throwaway copy of the bundle and opens nothing, to try the steps short of the relaunch.
+- **The update inside the app.** About in Settings fetches the newer version's image from the release's stable asset name (`update::download`), mounts it, copies `Tabflip.app` beside the running bundle and swaps it in (`update::install`), then quits; the new app opens once the old process has ended. `tabflip --try-update <bundle>` does the same to a throwaway copy of the bundle and opens nothing, to try the steps short of the relaunch.
 
 ## When something fails
 
@@ -170,8 +171,8 @@ Every failure met while cutting a release gets a line here once it is solved, wi
 - **"CHANGELOG.md has no section '## vX.Y.Z'"**: add it, commit, redo the tag.
 - **`--locked` fails in CI after a bump**: `Cargo.lock` was not refreshed. `cargo check -p tabflip-app`, commit the lock.
 - **Notarization rejected**: `xcrun notarytool log <submission-id> --keychain-profile notarytool-profile`. The usual causes are a binary signed without `--options runtime` or an unsigned helper inside the bundle; the script signs with `--deep` and the hardened runtime, so look for a new binary the packager added.
-- **Two tabflips in Launchpad or Spotlight**: a second bundle on the disk. `mdfind "kMDItemFSName == 'tabflip.app'"` lists them; keep only `/Applications/tabflip.app`. The dev build's bundle is made in `target/debug/dev.noindex/`, which Spotlight passes by, and step 8 removes it with the rest of `target/`.
-- **The Mac images on the release are ad-hoc signed**, or macOS says the app "cannot be opened" after an update: step 6 was skipped. Run `scripts/release-publish.sh X.Y.Z`. To check an installed copy: `spctl -a -vv /Applications/tabflip.app` must say "Notarized Developer ID"; "rejected" with `Signature=adhoc` from `codesign -dv` is CI's image. Reinstall from `dist/` (step 7).
+- **Two Tabflips in Launchpad or Spotlight**: a second bundle on the disk. `mdfind "kMDItemFSName == 'tabflip.app'c"` (the `c` matches without case: an older copy is `tabflip.app`) lists them; keep only `/Applications/Tabflip.app`. The dev build's bundle is made in `target/debug/dev.noindex/`, which Spotlight passes by, and step 8 removes it with the rest of `target/`.
+- **The Mac images on the release are ad-hoc signed**, or macOS says the app "cannot be opened" after an update: step 6 was skipped. Run `scripts/release-publish.sh X.Y.Z`. To check an installed copy: `spctl -a -vv /Applications/Tabflip.app` must say "Notarized Developer ID"; "rejected" with `Signature=adhoc` from `codesign -dv` is CI's image. Reinstall from `dist/` (step 7).
 - **The app's update check finds nothing after a release**: the release is still a draft. `releases/latest` names only published releases; run step 6.
 - **Tags published as drafts and never published** (v0.1.0 to v0.1.3, before there was a Developer ID): their drafts held only CI's ad-hoc images and were deleted; the tags and the changelog sections stay.
 - **"Node.js NN is deprecated" on a run**: an action is a major version behind. `gh api repos/<owner>/<action>/releases/latest -q .tag_name` gives the current one; move `rust.yml` and `release.yml` together.

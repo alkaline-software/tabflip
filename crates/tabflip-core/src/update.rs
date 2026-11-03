@@ -1,4 +1,4 @@
-//! Keeping tabflip current: whether a newer one is out, fetching its disk
+//! Keeping Tabflip current: whether a newer one is out, fetching its disk
 //! image, and putting it in place.
 //!
 //! Releases live on GitHub under stable asset names (docs/release.md), so no
@@ -8,7 +8,7 @@
 //! are published. `curl`, which every Mac has, does the talking, so the
 //! app carries no HTTPS client.
 //!
-//! Installing: the disk image is mounted, `tabflip.app` copied out beside
+//! Installing: the disk image is mounted, `Tabflip.app` copied out beside
 //! the running bundle with `ditto` (which keeps the signature and the
 //! attributes), and swapped in with two renames. The old process keeps
 //! running from its unlinked files until the app quits, and the new app
@@ -164,7 +164,7 @@ pub fn bundle_path() -> Option<PathBuf> {
 /// have the new one open once this process has ended. On success the
 /// caller quits.
 pub fn install(dmg: &Path) -> Result<(), String> {
-    let bundle = bundle_path().ok_or("tabflip is not running from an app bundle here; open the disk image and drag tabflip to Applications instead")?;
+    let bundle = bundle_path().ok_or("Tabflip is not running from an app bundle here; open the disk image and drag Tabflip to Applications instead")?;
     install_into(dmg, &bundle, true)
 }
 
@@ -173,6 +173,7 @@ pub fn install(dmg: &Path) -> Result<(), String> {
 /// bundle and opens nothing).
 pub fn install_into(dmg: &Path, bundle: &Path, open: bool) -> Result<(), String> {
     let parent = bundle.parent().ok_or("the bundle has no parent folder")?;
+    let placed = placed_as(bundle);
     let mount = downloads_dir().join("mnt");
     let _ = Command::new("hdiutil").args(["detach", "-quiet"]).arg(&mount).output();
     std::fs::create_dir_all(&mount).map_err(|e| e.to_string())?;
@@ -183,13 +184,13 @@ pub fn install_into(dmg: &Path, bundle: &Path, open: bool) -> Result<(), String>
     let detach = || {
         let _ = Command::new("hdiutil").args(["detach", "-quiet"]).arg(&mount).output();
     };
-    let fresh = mount.join("tabflip.app");
+    let fresh = mount.join(APP);
     if !fresh.is_dir() {
         detach();
-        return Err("the disk image holds no tabflip.app".into());
+        return Err(format!("the disk image holds no {APP}"));
     }
-    let staged = parent.join("tabflip.app.update");
-    let old = parent.join("tabflip.app.old");
+    let staged = parent.join(format!("{APP}.update"));
+    let old = parent.join(format!("{APP}.old"));
     let _ = std::fs::remove_dir_all(&staged);
     let _ = std::fs::remove_dir_all(&old);
     let out = Command::new("ditto").arg(&fresh).arg(&staged).output().map_err(|e| e.to_string())?;
@@ -199,16 +200,27 @@ pub fn install_into(dmg: &Path, bundle: &Path, open: bool) -> Result<(), String>
         return Err(format!("could not copy the new app next to this one: {}", String::from_utf8_lossy(&out.stderr).trim()));
     }
     std::fs::rename(bundle, &old).map_err(|e| format!("could not move the current app aside ({}): {e}", bundle.display()))?;
-    if let Err(e) = std::fs::rename(&staged, bundle) {
+    if let Err(e) = std::fs::rename(&staged, &placed) {
         let _ = std::fs::rename(&old, bundle);
         let _ = std::fs::remove_dir_all(&staged);
         return Err(format!("could not put the new app in place: {e}"));
     }
     let _ = std::fs::remove_dir_all(&old);
     if open {
-        open_once_gone(std::process::id(), bundle).map_err(|e| format!("the new app is in place but did not start: {e}"))?;
+        open_once_gone(std::process::id(), &placed).map_err(|e| format!("the new app is in place but did not start: {e}"))?;
     }
     Ok(())
+}
+
+/// The bundle's name in the disk image, and where an update puts it.
+pub const APP: &str = "Tabflip.app";
+
+/// Where the new app goes in place of `bundle`: under the name it had, unless that is the app's own name spelled otherwise (`tabflip.app`, as it was until v0.2.4), which takes the name as it is now. The disk image is a case-insensitive volume, so a copy older than the new name still finds the app in it.
+fn placed_as(bundle: &Path) -> std::path::PathBuf {
+    match (bundle.file_name().and_then(|n| n.to_str()), bundle.parent()) {
+        (Some(name), Some(parent)) if name != APP && name.eq_ignore_ascii_case(APP) => parent.join(APP),
+        _ => bundle.to_path_buf(),
+    }
 }
 
 /// Open `bundle` once the process `pid` has ended: a shell of its own
@@ -265,5 +277,12 @@ mod tests {
         assert!(!due(1_000_000, 1_000_000 + 3600));
         assert!(due(1_000_000, 1_000_000 + 86_400));
         assert!(!due(2_000, 1_000));
+    }
+
+    #[test]
+    fn an_update_takes_the_app_s_name_as_it_is_now() {
+        assert_eq!(placed_as(Path::new("/Applications/tabflip.app")), Path::new("/Applications/Tabflip.app"));
+        assert_eq!(placed_as(Path::new("/Applications/Tabflip.app")), Path::new("/Applications/Tabflip.app"));
+        assert_eq!(placed_as(Path::new("/Users/me/Apps/Switcher.app")), Path::new("/Users/me/Apps/Switcher.app"));
     }
 }

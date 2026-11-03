@@ -26,7 +26,7 @@ gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", 
 # The window selection layer, for ending a drag a swallowed click would leave open.
 gpui-base = { git = "https://github.com/longbridge/gpui-component", rev = "fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c" }
 
-# tabflip is a Mac's alone: the window list, the key tap and the switch to a
+# Tabflip is a Mac's alone: the window list, the key tap and the switch to a
 # window are all macOS calls.
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"
@@ -42,7 +42,7 @@ raw-window-handle = "0.6"
 # Installers: `cargo packager --release`. The Mac bundle is signed afterwards
 # by scripts/release-mac.sh, with the identity of whoever runs it (docs/release.md).
 [package.metadata.packager]
-productName = "tabflip"
+productName = "Tabflip"
 identifier = "com.alkalinesoftware.tabflip"
 description = "Switch between windows, not apps."
 homepage = "https://github.com/alkaline-software/tabflip"

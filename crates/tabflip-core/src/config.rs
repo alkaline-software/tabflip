@@ -23,7 +23,7 @@ pub struct Config {
     /// The selected row's color: a preset's name ("blue") or "#rrggbb".
     pub highlight: String,
     /// Whether the item stands in the menu bar. Without it, Settings are
-    /// reached by opening tabflip again from Finder or Spotlight.
+    /// reached by opening Tabflip again from Finder or Spotlight.
     pub menu_bar_icon: bool,
     /// The item's clicks swapped: the menu on a left click, Settings on
     /// a right one.
@@ -107,7 +107,7 @@ impl Config {
     }
 }
 
-/// The folder tabflip keeps its files in.
+/// The folder Tabflip keeps its files in.
 pub fn home() -> PathBuf {
     if let Some(dir) = std::env::var_os("TABFLIP_HOME") {
         return PathBuf::from(dir);

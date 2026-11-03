@@ -1,8 +1,8 @@
 # Design
 
-The standard every part of tabflip a person sees is held to: the list that shows while the shortcut is held, the Settings window and its controls, the menu bar item and its menu, the app icon. The bar is the work that wins Awwwards, the Webbys and the FWA: minimal, calm, intuitive, finished in every state. Every change meets it unasked.
+The standard every part of Tabflip a person sees is held to: the list that shows while the shortcut is held, the Settings window and its controls, the menu bar item and its menu, the app icon. The bar is the work that wins Awwwards, the Webbys and the FWA: minimal, calm, intuitive, finished in every state. Every change meets it unasked.
 
-tabflip is an Alkaline Software product and reads as one of the studio's because it is drawn to the same rules. This file is tabflip's whole standard: its accent, its icon's subject, its window's size, the parts it has and the helpers in its code that draw each pattern. A helper named in brackets is in `crates/tabflip-app/src/`.
+Tabflip is an Alkaline Software product and reads as one of the studio's because it is drawn to the same rules. This file is Tabflip's whole standard: its accent, its icon's subject, its window's size, the parts it has and the helpers in its code that draw each pattern. A helper named in brackets is in `crates/tabflip-app/src/`.
 
 ## Rules
 
@@ -12,7 +12,7 @@ tabflip is an Alkaline Software product and reads as one of the studio's because
 - **No pause at the end of a motion.** It runs into its place and stops, with no crawl or second step in its last frames.
 - **Nothing slow is asked while a frame is built** (Motion, Frames).
 - **Words are few.** A row's name says what it is. A line under it is there only where the name does not say it all, in a few plain words, and never repeats what the control shows.
-- **Words are for everyone.** tabflip is used in many languages; nothing says how it does in one of them.
+- **Words are for everyone.** Tabflip is used in many languages; nothing says how it does in one of them.
 - **One way to draw each thing.** A setting is a row on a card (`line`, `group`); on or off is a switch (`switch`); a choice among a few is `segmented`; a list of many drops down (`pick`); a button is a pill with an icon before its word (`ui::pill`); a key is a cap (`ui::key_caps`). A new control is a new pattern for every page, or it is not made.
 - **Things line up.** Names start on one line, controls end on another, and the widest controls on a page start and end together (`CONTROL_W`). Every field, button and choice in a row is one height.
 - **Every language.** A label never depends on English being short: controls grow to their words, and a page that fits in English fits in French and German. Each language is written as its own Mac writes it, with the system's names for its settings.
@@ -50,7 +50,7 @@ White on the light shade is 5.6 to 1; the ink on the dark shade is 7.2 to 1. The
 
 ### The list's own colors
 
-The list is drawn over whatever is on screen, in the system's appearance, and is the one part of tabflip not on the studio's page (`panel::colors`):
+The list is drawn over whatever is on screen, in the system's appearance, and is the one part of Tabflip not on the studio's page (`panel::colors`):
 
 | | Light | Dark |
 |---|---|---|
@@ -96,7 +96,7 @@ One drawing in the studio's manner, so the Dock reads it as one of the studio's.
 ### The manner
 
 - **The ground** is the Alkaline Software cream with a fifth of sapphire in it, so the Dock tells the studio's icons apart by their grounds while the drawings stay one hand. The cream is a diagonal gradient from `#fdf8ee` at the top left to `#f1e4d0` at the bottom right; each end is mixed with the mean of sapphire's two base shades (`#2A69B4` and `#7DAEEC`), 16% at the top left and 24% at the bottom right, so the wash deepens toward the shadowed corner: `#e2e7e9` to `#cbcfd0` (`ground` in `icon.html`). The gradient is computed per pixel: a canvas gradient fill is dithered by the browser, and that noise makes the PNG about ten times larger.
-- **The lines** are navy (`#2b2556`), with one amber stroke (`#ffb83e`), the same in every icon of the studio. tabflip's carries no violet spark: beside the cards it crowded the drawing.
+- **The lines** are navy (`#2b2556`), with one amber stroke (`#ffb83e`), the same in every icon of the studio. Tabflip's carries no violet spark: beside the cards it crowded the drawing.
 - **The product's accent** takes the one place the subject has for a color of its own: sapphire's dark shade (`#7DAEEC`) fills the window that is chosen.
 - **The subject** is two windows seen plainly from the front, rounded cards, the one in front up and to the right of the one behind, as the switcher moves from the window just used to the one chosen. The front one is filled with sapphire and its title bar is the amber stroke; the one behind is white paper (the studio's cream read warm and out of place on the cool ground). The menu bar item is the same two cards, so the item and the icon are one drawing. Lines only, few of them, no words.
 - **It keeps to the room the studio's other drawings take**: about 16 to 84 across and 20 to 80 down in the 100-unit body, lines included, centered (`PAIR` in `icon.html`). The first stack ran from 8 to 92 and read as touching the edges beside its neighbors in the Dock.
@@ -124,7 +124,7 @@ A change to the icon is made on the page, looked at there, rendered again, built
 
 ## The list
 
-The list is tabflip itself: a small stack of rows over everything, there while the shortcut is held and gone when it is let go. It is a window of its own, opened once and put away between rounds, and never takes the keyboard (`docs/platform.md`, The list's window).
+The list is Tabflip itself: a small stack of rows over everything, there while the shortcut is held and gone when it is let go. It is a window of its own, opened once and put away between rounds, and never takes the keyboard (`docs/platform.md`, The list's window).
 
 | Part | At Small |
 |---|---|
@@ -141,7 +141,7 @@ The list is tabflip itself: a small stack of rows over everything, there while t
 
 ## The window
 
-Settings, tabflip's only window, laid out as the Mac's own settings are: a rail of sections at the left and the section's page at the right, the section's name in a band at the top level with the traffic lights, both fading in as the section changes. The window opens at 820 by 600, as every product's settings do, so the studio's windows are one size. It is never narrower, since its rows are laid out for that width, and goes down to 460 tall, where the page scrolls. Every section fits without scrolling.
+Settings, Tabflip's only window, laid out as the Mac's own settings are: a rail of sections at the left and the section's page at the right, the section's name in a band at the top level with the traffic lights, both fading in as the section changes. The window opens at 820 by 600, as every product's settings do, so the studio's windows are one size. It is never narrower, since its rows are laid out for that width, and goes down to 460 tall, where the page scrolls. Every section fits without scrolling.
 
 | Part | Size |
 |---|---|
@@ -156,7 +156,7 @@ Settings, tabflip's only window, laid out as the Mac's own settings are: a rail 
 | A switch | 36 by 20, its knob 16; the track the switch color off and the accent on, both over a moment |
 | The language's list | 136 wide, at the right of General's title |
 
-- The rail's General wears a dot in the accent while Accessibility is missing, and About while a newer tabflip waits.
+- The rail's General wears a dot in the accent while Accessibility is missing, and About while a newer Tabflip waits.
 - A new row is made with `line` in a `group`, never laid out by hand.
 - The window's top and the rail are the app's to drag by (`drag_region`); a press on a control there takes its press before the drag does.
 
@@ -164,7 +164,7 @@ Settings, tabflip's only window, laid out as the Mac's own settings are: a rail 
 
 - **General** is three groups. Switcher: Shortcut, the keys on their caps in a field, Reset beside it, and a line under the row that says what the shortcut does, or what is wrong with the one pressed. App: Launch at login, Show in menu bar, Swap clicks. Permissions: Accessibility, which says whether it is given and the one thing to do when it is not: Allow (the system's own question, once an app's life), or Open Settings after that.
 - **Customize** is one group, The list: Size (Small, Medium, Large on a segmented control), Accent (the eight swatches), Your own color (a field for a hex code, marked when it is not a color), and Preview, a row as the list draws it at the chosen size and color.
-- **About** is the same in every product of the studio. A card holds the title card, set as a film's first one is: "Alkaline Software presents" at 14 points, the studio a link; the app's icon at 88; its name at 42 in the name's face and the accent; the version at 12.5 in the muted ink. Under the card, pills to the source (GitHub) and the release's notes; tabflip has no site of its own, so there is no pill to one. Then, a little further down, the updates: a card of two rows, Updates (what a check found, and the one button that is Check for updates until a check finds something and Update to x after, saying how far the download is as it goes, with the release's notes under it then) and Check automatically, with no line under it. Nothing is fetched or installed without the press. The studio is the only name About gives.
+- **About** is the same in every product of the studio. A card holds the title card, set as a film's first one is: "Alkaline Software presents" at 14 points, the studio a link; the app's icon at 88; its name at 42 in the name's face and the accent; the version at 12.5 in the muted ink. Under the card, pills to the source (GitHub) and the release's notes; Tabflip has no site of its own, so there is no pill to one. Then, a little further down, the updates: a card of two rows, Updates (what a check found, and the one button that is Check for updates until a check finds something and Update to x after, saying how far the download is as it goes, with the release's notes under it then) and Check automatically, with no line under it. Nothing is fetched or installed without the press. The studio is the only name About gives.
 
 ### Controls
 
@@ -178,10 +178,10 @@ Settings, tabflip's only window, laid out as the Mac's own settings are: a rail 
 
 ## The menu bar
 
-- tabflip has `LSUIElement` in every bundle and is a regular app only while Settings are open, so the window can be found again once another app covers it (`docs/platform.md`, The menu bar and the Dock).
+- Tabflip has `LSUIElement` in every bundle and is a regular app only while Settings are open, so the window can be found again once another app covers it (`docs/platform.md`, The menu bar and the Dock).
 - **The item** is at the menu bar's right: the icon's two cards as a template image (`assets/icons/menubar.png`), 18 pt, drawn at 1x and 2x, which the system tints for the light bar, the dark one and the highlighted state.
-- **A left click opens Settings** where they were left; a right click, or Control and a click, shows the menu. Swap clicks (General) swaps the two, and Show in menu bar hides the item; both change at once (`sys::status_item::set`). Opened again from Finder or Spotlight while running, tabflip shows Settings, which is the way back with the item hidden.
-- **The menu is the system's own**, never one drawn by the app: the sections in the rail's order with the rail's icons, a line before About, another before Quit tabflip.
+- **A left click opens Settings** where they were left; a right click, or Control and a click, shows the menu. Swap clicks (General) swaps the two, and Show in menu bar hides the item; both change at once (`sys::status_item::set`). Opened again from Finder or Spotlight while running, Tabflip shows Settings, which is the way back with the item hidden.
+- **The menu is the system's own**, never one drawn by the app: the sections in the rail's order with the rail's icons, a line before About, another before Quit Tabflip.
 - **Its icons are the window's Tabler SVGs** rendered at one and two pixels a point into template images (`line_image`, by resvg), so the system tints them. An app built on the macOS 27 SDK has its menus' images hidden unless each item asks for its own (`preferredImageVisibility`).
 - **The menu is named again** when the window's language changes (`sys::status_item::retitle`).
 - **Launch at login** is the system's to keep (`SMAppService`): read from the system when the window opens or comes back, never written to the settings. The person may turn it off in Login Items.
@@ -251,7 +251,7 @@ The rows of the list changing as a fresh look replaces the remembered one (the c
 
 ## Languages
 
-The window speaks English, Chinese (Simplified and Traditional, told apart by script or region), Japanese, Korean, French, German and Spanish. By default it follows the system: the first of its preferred languages tabflip has (`i18n::pick`), else English. Only the window's words change: the list shows each window's own title and its app's own name.
+The window speaks English, Chinese (Simplified and Traditional, told apart by script or region), Japanese, Korean, French, German and Spanish. By default it follows the system: the first of its preferred languages Tabflip has (`i18n::pick`), else English. Only the window's words change: the list shows each window's own title and its app's own name.
 
 - **English is the key.** A phrase is written in the code in English inside `t("…")`, or `tf("… {name} …", …)` with blanks, and `locales/words.json` holds its other languages. A sentence with links in it (About's title) is woven from its translation (`weave`), so each language puts the links where its order wants them. `cargo test -p tabflip-app` fails on a phrase asked for and not in the table, one in the table no longer asked for, a language missing, or a blank that differs from the English.
 - **The language is chosen** from a list at the right of General's title: System first, then each language by its flag and letters (`i18n::CHOICES`). A choice takes at once: the words, the menu bar's menu, the app's menu, and the window fades into the new language.

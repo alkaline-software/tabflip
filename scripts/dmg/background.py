@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The disk image's Finder background: "Drag tabflip to Applications" on
+"""The disk image's Finder background: "Drag Tabflip to Applications" on
 the app's page color, with a sapphire arrow between where the app icon
 and the Applications link sit. 1320x840 pixels at 144 dpi, which Finder
 shows as the 660x420 window release-mac.sh opens. Needs Pillow and LXGW
@@ -23,7 +23,7 @@ OUT = Path(__file__).with_name("background.png")
 img = Image.new("RGB", (W, H), PAGE)
 draw = ImageDraw.Draw(img)
 
-text = "Drag tabflip to Applications"
+text = "Drag Tabflip to Applications"
 for size in range(96, 40, -1):
     font = ImageFont.truetype(str(FONT), size)
     box = draw.textbbox((0, 0), text, font=font)

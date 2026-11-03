@@ -1,6 +1,6 @@
 //! The Settings window's look: the palette Alkaline Software's apps share
 //! (`themes/tabflip.json`, one config per appearance, near white with a
-//! trace of warmth in the light appearance), with tabflip's accent,
+//! trace of warmth in the light appearance), with Tabflip's accent,
 //! sapphire, painted into both configs before the toolkit gets them, so
 //! `Theme::change` keeps it on every appearance switch.
 //!

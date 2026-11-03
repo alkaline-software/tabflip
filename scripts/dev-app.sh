@@ -4,7 +4,7 @@
 #
 #   scripts/dev-app.sh
 #
-# tabflip needs Accessibility, and macOS keeps that grant by who signed
+# Tabflip needs Accessibility, and macOS keeps that grant by who signed
 # the app. A build signed by nobody (ad-hoc) is a new app after every
 # build and has to be allowed again each time, so the bundle is signed
 # with the first identity found of:
@@ -15,13 +15,13 @@
 #   "tabflip dev", made once by scripts/make-dev-cert.sh
 #
 # The bundle sits in a folder named ".noindex", so Spotlight and Launchpad
-# do not list a second tabflip beside an installed one.
+# do not list a second Tabflip beside an installed one.
 set -eu
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.cargo/bin:$PATH"
 cargo build -p tabflip-app
 bin=target/debug/tabflip
-app=target/debug/dev.noindex/tabflip.app
+app=target/debug/dev.noindex/Tabflip.app
 
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 rm -f "$app/Contents/MacOS/tabflip"
@@ -32,8 +32,8 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>tabflip dev</string>
-  <key>CFBundleDisplayName</key><string>tabflip (dev)</string>
+  <key>CFBundleName</key><string>Tabflip dev</string>
+  <key>CFBundleDisplayName</key><string>Tabflip (dev)</string>
   <key>CFBundleIdentifier</key><string>com.alkalinesoftware.tabflip.dev</string>
   <key>CFBundleVersion</key><string>0</string>
   <key>CFBundleShortVersionString</key><string>dev</string>
@@ -73,6 +73,6 @@ touch "$app"
 # Any running copy quits, the dev one and an installed one, since two
 # would both take the shortcut (SIGTERM puts the system's ⌘Tab back), and
 # this one opens. Its log is ~/Library/Logs/tabflip-dev.log.
-pkill -TERM -f "tabflip.app/Contents/MacOS/tabflip" 2>/dev/null && sleep 0.5 || true
+pkill -TERM -if "tabflip.app/Contents/MacOS/tabflip" 2>/dev/null && sleep 0.5 || true
 open "$app"
-echo "dev-app: opened $app; in Accessibility it is \"tabflip dev\"" >&2
+echo "dev-app: opened $app; in Accessibility it is \"Tabflip dev\"" >&2
