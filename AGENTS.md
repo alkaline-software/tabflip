@@ -27,7 +27,8 @@ tabflip is an Alkaline Software product, held to the studio's standard: minimal,
 - **The list never waits for a look**: the windows last seen show at once and a fresh look replaces them (`docs/switcher.md`).
 - **The panel window is opened once and put away with `orderOut`** after a clear frame (`docs/platform.md`, The list's window).
 - **Settings close by `on_window_closed`**, never `on_window_should_close`, which ⌘W never asks (`docs/platform.md`).
-- **One copy of gpui**: the pin is in `Cargo.lock`, never a `rev` in a manifest (Dependencies, below).
+- **One copy of gpui**: the pin is in `Cargo.lock`, never a `rev` in a manifest. The toolkit is vendored, and every change to it is marked `(Studio addition.)` and listed in `vendor/gpui-component/UPSTREAM.md`. Build from the root, never inside `vendor/` (Dependencies, below).
+- **Other apps are asked only when a round begins**, and nothing runs at rest (`docs/platform.md`).
 
 ## Before you edit, read
 
@@ -66,6 +67,7 @@ crates/tabflip-app/src/
   assets.rs       our icons (assets/icons, Tabler) over gpui-component's
   sys/            every macOS call: ax, windows, focus, tap, private (SkyLight), status_item, and placement, languages, login and the Dock in mod.rs
 scripts/          dev-app.sh, make-dev-cert.sh, make-icon.sh and icon/, dmg/, release-*.sh
+vendor/           gpui-component and block, each with an UPSTREAM.md
 ```
 
 ## Running it
@@ -95,4 +97,4 @@ The core's tests need no Mac and no window. The app's test holds the languages' 
 
 ## Dependencies
 
-gpui is a `git` dependency with no `rev`; the pin is in `Cargo.lock`, at a fixed zed commit (`cargo update -p gpui --precise <rev>` moves it). A `rev` in the manifest makes a second gpui that gpui-component will not build against. gpui-component is upstream, pinned by `rev` in the app's manifest.
+gpui is a `git` dependency with no `rev`; the pin is in `Cargo.lock`, at a fixed zed commit (`cargo update -p gpui --precise <rev>` moves it). A `rev` in the manifest makes a second gpui that gpui-component will not build against. gpui-component is pinned by `rev` in the app's manifest and built from `vendor/gpui-component/`, the studio's copy of that revision, through `[patch]` in the root `Cargo.toml`, so the manifest still names where the code came from. Each change made to it is marked `(Studio addition.)` in the source and numbered in its `UPSTREAM.md`, or it is lost at the next move to a newer upstream. `vendor/block` is the Objective-C blocks crate under gpui's Mac backend, changed so a future Rust still compiles it. The vendored crates are workspaces of their own: cargo run inside `vendor/` resolves another lock and writes a second `target/`.

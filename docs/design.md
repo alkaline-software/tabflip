@@ -231,6 +231,8 @@ gpui lays out and paints the whole of a window at every frame it draws, and a ho
 
 - **Nothing slow is asked while a frame is built.** What the system has is asked once and kept. Listing every installed face takes about 135 ms on a Mac with many fonts; About asked for it at each draw to find the name's face, and each of its frames took 120 to 280 ms. It is found once at launch now (`ui::find_faces`), and a frame of About is back to one display frame. Nothing reads the disk or asks another app at a draw.
 - **The list reads nothing at a frame.** What a probe set in the environment is read once (`panel::probe`); the rows are what the last look found.
+- **The list's frames start when it is due.** Its window goes on screen clear at the shortcut's press, so gpui's frames are running when the list shows (`docs/platform.md`, The list's window): every slide and fade of four rounds runs at the display's rate, no frame more than 20 ms after the last at 60 Hz, the first round included.
+- **A clock runs only while it has something to move.** The toolkit's notifications ticked every 50 ms for as long as a window was open, in a window that never shows one; they tick only from a notification's arrival to its going (`vendor/gpui-component/UPSTREAM.md`).
 - **The main thread never waits on another app** (`docs/platform.md`, Rules). A motion runs on gpui's clock, so a held thread is a motion lost: its first frame is drawn at nothing and the next at its end.
 
 ### Left as they are, on purpose

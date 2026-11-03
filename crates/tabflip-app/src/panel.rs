@@ -38,9 +38,10 @@ pub struct Panel {
     controller: Entity<Controller>,
     shown: Instant,
     leaving: Option<Instant>,
-    /// Which round of showing this is, so a put-away from an earlier one
-    /// does not hide a later one.
+    /// Which showing this is, for the animations' keys.
     showing: u64,
+    /// Counted at each readying and showing, so a put-away from an earlier round does not hide a later one.
+    turn: u64,
     /// The highlight's slides, counted, so each plays once on gpui's
     /// clock; where the one under way started, and where the highlight
     /// is drawn now, which the next slide starts from.
@@ -78,8 +79,14 @@ pub fn open(controller: Entity<Controller>, cx: &mut App) -> Option<WindowHandle
         |_, cx| {
             let now = Instant::now() - LEAVE * 2;
             cx.new(|cx| {
-                cx.observe(&controller, |_, _, cx| cx.notify()).detach();
-                Panel { controller, shown: now, leaving: Some(now), showing: 0, slide: 0, slide_from: 0., at: Rc::default(), last_selected: None, scroll: ScrollHandle::new(), scale: 1. }
+                // Drawn again for a change only while it is on screen: put away, it has nothing to show, and a change in Settings would draw it for no one.
+                cx.observe(&controller, |p: &mut Panel, _, cx| {
+                    if !p.put_away() {
+                        cx.notify();
+                    }
+                })
+                .detach();
+                Panel { controller, shown: now, leaving: Some(now), showing: 0, turn: 0, slide: 0, slide_from: 0., at: Rc::default(), last_selected: None, scroll: ScrollHandle::new(), scale: 1. }
             })
         },
     )
@@ -87,6 +94,12 @@ pub fn open(controller: Entity<Controller>, cx: &mut App) -> Option<WindowHandle
 }
 
 impl Panel {
+    /// A round began: the window goes on screen at once, still clear and letting the pointer through, so it is drawing by the time the list is due. gpui starts a window's frames only once the system reports it visible, tens of milliseconds after it is put on screen; ordered front at the showing, the list came up that much late at every round. A round that picks before the list is due puts it away again (`leave`).
+    pub fn ready(&mut self, window: &mut Window) {
+        self.turn += 1;
+        crate::sys::ready_panel(window);
+    }
+
     /// Shown for a round with `rows` rows, sized to them.
     pub fn appear(&mut self, rows: usize, window: &mut Window, cx: &mut Context<Self>) {
         self.scale = self.controller.read(cx).config.size().scale();
@@ -94,6 +107,7 @@ impl Panel {
         let most = ((crate::sys::screen_height() as f32 * 0.7 - 2. * pad) / row_h).floor().max(1.) as usize;
         let height = rows.clamp(1, most) as f32 * row_h + 2. * (pad + MARGIN + EDGE);
         self.showing += 1;
+        self.turn += 1;
         self.shown = Instant::now();
         self.leaving = None;
         self.last_selected = None;
@@ -108,17 +122,27 @@ impl Panel {
         cx.notify();
     }
 
+    /// Gone from the screen: its fade out is over, or it never came in.
+    fn put_away(&self) -> bool {
+        self.leaving.is_some_and(|at| at.elapsed() > LEAVE)
+    }
+
+    /// The round is over: a list that showed fades out and is put away once a clear frame is drawn; one only readied, clear already, is put away once any fade of the round before is over.
     pub fn leave(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if self.leaving.is_some() {
-            return;
-        }
-        self.leaving = Some(Instant::now());
-        cx.notify();
-        let showing = self.showing;
+        let after = LEAVE + Duration::from_millis(50);
+        let wait = match self.leaving {
+            None => {
+                self.leaving = Some(Instant::now());
+                cx.notify();
+                after
+            }
+            Some(at) => after.saturating_sub(at.elapsed()),
+        };
+        let turn = self.turn;
         cx.spawn_in(window, async move |this, cx| {
-            cx.background_executor().timer(LEAVE + Duration::from_millis(50)).await;
+            cx.background_executor().timer(wait).await;
             let _ = this.update_in(cx, |p, window, _| {
-                if p.showing == showing && p.leaving.is_some() {
+                if p.turn == turn && p.leaving.is_some() {
                     crate::sys::hide_panel(window);
                 }
             });
@@ -153,6 +177,10 @@ fn colors(window: &Window, highlight: &str) -> Colors {
 
 impl Render for Panel {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // Put away, or readied for a round and not yet shown: nothing at all, so the window is clear whenever it is on screen without its list.
+        if self.put_away() {
+            return div().into_any_element();
+        }
         let c = self.controller.read(cx);
         let selected = c.selected();
         let rows = c.rows.clone();
@@ -235,7 +263,7 @@ impl Render for Panel {
             Some(_) => stack.with_animation(ElementId::Name(format!("out-{}", self.showing).into()), Animation::new(LEAVE).with_easing(ease_out_quint()), |d, t| d.opacity(1. - t)).into_any_element(),
             None => stack.with_animation(ElementId::Name(format!("in-{}", self.showing).into()), Animation::new(ENTER).with_easing(ease_out_quint()), |d, t| d.opacity(t).mt(px(-6. * (1. - t)))).into_any_element(),
         };
-        div().size_full().p(px(MARGIN)).font_family(".SystemUIFont").child(stack)
+        div().size_full().p(px(MARGIN)).font_family(".SystemUIFont").child(stack).into_any_element()
     }
 }
 

@@ -630,8 +630,6 @@ dependencies = [
 [[package]]
 name = "block"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "block-buffer"
@@ -2261,9 +2259,7 @@ dependencies = [
 [[package]]
 name = "gpui-base"
 version = "0.5.2"
-source = "git+https://github.com/longbridge/gpui-component?rev=fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c#fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "async-channel",
  "chrono",
@@ -2291,7 +2287,6 @@ dependencies = [
 [[package]]
 name = "gpui-component"
 version = "0.5.2"
-source = "git+https://github.com/longbridge/gpui-component?rev=fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c#fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2318,6 +2313,7 @@ dependencies = [
  "once_cell",
  "paste",
  "raw-window-handle",
+ "regex",
  "resvg 0.45.1",
  "ropey",
  "rust-i18n",
@@ -2336,7 +2332,6 @@ dependencies = [
 [[package]]
 name = "gpui-component-assets"
 version = "0.5.1"
-source = "git+https://github.com/longbridge/gpui-component?rev=fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c#fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c"
 dependencies = [
  "anyhow",
  "gpui",
@@ -2350,7 +2345,6 @@ dependencies = [
 [[package]]
 name = "gpui-component-macros"
 version = "0.5.1"
-source = "git+https://github.com/longbridge/gpui-component?rev=fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c#fd3bc2bbb8a2c4dfe268c1475682476ada54cd0c"
 dependencies = [
  "proc-macro2",
  "quote",

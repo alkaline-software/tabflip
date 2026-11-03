@@ -9,8 +9,10 @@ A sapphire tabflip, a new icon, an About like the studio's other apps, and a qui
 3. **About holds the updates.** The title card, then GitHub and the release's notes, then Updates and Check automatically on one card; Updates is no longer a section of its own, and the dot for a newer version is on About.
 4. **Settings are one size with the studio's other apps**, 820 by 600.
 5. **Typing stays quick while tabflip works.** It watches the keyboard on a thread of its own, so no key anywhere on the Mac waits for tabflip to draw.
-6. **About draws at once.** It looked up every installed font each time it was drawn, which held each frame for over a tenth of a second.
-7. **An app that hangs no longer slows tabflip**: the window in front is asked about off the main thread.
+6. **The list comes up on time.** It draws its first frame the moment it is due, where it came about 45 ms late, and every slide and fade runs at the display's rate from the first round on.
+7. **tabflip leaves other apps alone.** It asks the apps for their windows only when you press the shortcut, not at every app switch, and with Settings open it no longer wakes twenty times a second.
+8. **About draws at once.** It looked up every installed font each time it was drawn, which held each frame for over a tenth of a second.
+9. **An app that hangs no longer slows tabflip**: the window in front is asked about off the main thread.
 
 ## v0.2.3
 

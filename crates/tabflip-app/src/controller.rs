@@ -30,11 +30,8 @@ pub struct Controller {
     switcher: Switcher,
     windows: Vec<Win>,
     pub rows: Vec<Row>,
-    /// The windows as last looked at, shown at once while a fresh look is
-    /// taken, and whether one is being taken outside a round.
+    /// The windows as last looked at, shown at once while a round's own look is taken.
     known: Vec<Win>,
-    refreshing: bool,
-    refresh_again: bool,
     recent: Recent,
     icons: HashMap<i32, Option<Arc<Image>>>,
     panel: Option<WindowHandle<Panel>>,
@@ -107,8 +104,6 @@ impl Controller {
             windows: Vec::new(),
             rows: Vec::new(),
             known: Vec::new(),
-            refreshing: false,
-            refresh_again: false,
             recent: Recent::default(),
             icons: HashMap::new(),
             panel: None,
@@ -222,17 +217,18 @@ impl Controller {
 
     /// A round begins: the delay before the list shows starts. The windows last looked at are listed at once, those still on screen or put away, and a fresh look is taken off the main thread to replace them: an app slow to answer never keeps the list from showing. The window in front is remembered as the latest used when the look comes back; until then it is ranked by the stack, where it is first.
     fn begin(&mut self, round: u64, cx: &mut Context<Self>) {
+        self.ready_panel(cx);
         if !self.known.is_empty() {
             let stack = sys::windows::on_screen();
             let known = self.known.iter().filter(|w| w.minimized || w.app_hidden || w.id.is_some_and(|n| stack.contains(&n))).cloned().collect();
-            self.listed(round, known, &stack, cx);
+            self.listed(round, known, &stack, false, cx);
         }
         let listing = Self::look(cx);
         cx.spawn(async move |this, cx| {
             let look = listing.await;
             let _ = this.update(cx, |c, cx| {
                 c.looked(&look);
-                c.listed(round, look.windows, &look.stack, cx);
+                c.listed(round, look.windows, &look.stack, true, cx);
             });
         })
         .detach();
@@ -273,31 +269,21 @@ impl Controller {
         }
     }
 
-    /// A fresh look outside a round, for the next one to show at once. One asked for while another is under way is taken when that one is back, so the window in front at the last change is the one noted.
+    /// A look outside a round, when the tap starts, so the first round has windows to show at once. Later rounds remember the last round's look.
     fn refresh(&mut self, cx: &mut Context<Self>) {
         if !self.listening {
             return;
         }
-        if self.refreshing {
-            self.refresh_again = true;
-            return;
-        }
-        self.refreshing = true;
         let listing = Self::look(cx);
         cx.spawn(async move |this, cx| {
             let look = listing.await;
-            let _ = this.update(cx, |c, cx| {
-                c.refreshing = false;
-                c.looked(&look);
-                if std::mem::take(&mut c.refresh_again) {
-                    c.refresh(cx);
-                }
-            });
+            let _ = this.update(cx, |c, _| c.looked(&look));
         })
         .detach();
     }
 
-    fn listed(&mut self, round: u64, windows: Vec<Win>, stack: &[u32], cx: &mut Context<Self>) {
+    /// The round's windows, put in order and labeled: the round's own look when `fresh`, else the ones remembered from the last, which can be shown but not picked from (`Switcher::remembered`).
+    fn listed(&mut self, round: u64, windows: Vec<Win>, stack: &[u32], fresh: bool, cx: &mut Context<Self>) {
         if round != self.switcher.round() || !self.switcher.is_active() {
             return;
         }
@@ -318,7 +304,7 @@ impl Controller {
         let now = was.and_then(|id| ordered.iter().position(|w| w.id == Some(id)));
         self.windows = ordered;
         self.rows = rows;
-        let e = self.switcher.listed(round, self.windows.len());
+        let e = if fresh { self.switcher.listed(round, self.windows.len()) } else { self.switcher.remembered(round, self.windows.len()) };
         if let Some(i) = now {
             self.switcher.keep(i);
         }
@@ -327,6 +313,14 @@ impl Controller {
 
     fn icon(&mut self, pid: i32) -> Option<Arc<Image>> {
         self.icons.entry(pid).or_insert_with(|| sys::windows::icon_png(pid, 32.).map(|png| Arc::new(Image::from_bytes(ImageFormat::Png, png)))).clone()
+    }
+
+    /// The panel on screen, clear, while the round's delay runs (`Panel::ready`).
+    fn ready_panel(&mut self, cx: &mut Context<Self>) {
+        let Some(panel) = self.panel else { return };
+        cx.defer(move |cx| {
+            let _ = panel.update(cx, |p, window, _| p.ready(window));
+        });
     }
 
     fn show(&mut self, cx: &mut Context<Self>) {
@@ -350,9 +344,18 @@ impl Controller {
         }
     }
 
-    /// Each time another app comes forward, the windows are looked at again for the next round, which notes the one in front.
+    /// Each time another app comes forward, its window in front is noted as just used, so a window put away later keeps its place among the recent. One question to one app, off the main thread: the windows themselves are looked at only when a round begins, since a look asks every app and each must answer, and a round's own look is in before the list shows or a quick press picks.
     pub fn app_activated(&mut self, cx: &mut Context<Self>) {
-        self.refresh(cx);
+        if !self.listening {
+            return;
+        }
+        let asked = cx.background_spawn(async { sys::windows::focused() });
+        cx.spawn(async move |this, cx| {
+            if let Some(id) = asked.await {
+                let _ = this.update(cx, |c, _| c.recent.touch(id));
+            }
+        })
+        .detach();
     }
 
     /// `TABFLIP_SHOT`: the list as it shows for a few windows, with no
@@ -380,11 +383,20 @@ impl Controller {
                 Row { label: label.into(), app: (*app).into(), icon }
             })
             .collect();
+        // As a press of the shortcut plays it: the panel readied, the list shown once the delay has passed.
         let round = self.switcher.round() + 1;
         self.switcher.trigger(false);
         self.switcher.listed(round, self.rows.len());
-        let e = self.switcher.delay_passed(round);
-        self.effect(e, cx);
+        self.ready_panel(cx);
+        let delay = Duration::from_millis(self.config.appear_delay_ms());
+        cx.spawn(async move |this, cx| {
+            cx.background_executor().timer(delay).await;
+            let _ = this.update(cx, |c, cx| {
+                let e = c.switcher.delay_passed(round);
+                c.effect(e, cx);
+            });
+        })
+        .detach();
     }
 
     /// `TABFLIP_DEMO_LOOP`: a row down, as Tab does.

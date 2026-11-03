@@ -84,15 +84,30 @@ pub fn activations() -> futures::channel::mpsc::UnboundedReceiver<()> {
     rx
 }
 
+/// The switcher's panel put on screen at the start of a round, at the size it has, still clear and letting the pointer through, so its frames are running by the time the list shows (`Panel::ready`).
+pub fn ready_panel(window: &gpui::Window) {
+    let Some(native) = ns_window(window) else { return };
+    let size = native.frame().size;
+    native.setIgnoresMouseEvents(true);
+    place_panel(window, size.width, size.height);
+}
+
 /// The switcher's panel placed: `size` points, centered on the screen
 /// under the pointer, and shown over everything without taking the
-/// keyboard. It moves with whatever Space is showing, full-screen ones
-/// included.
+/// keyboard, the pointer's to hover and click.
 pub fn show_panel(window: &gpui::Window, width: f64, height: f64) {
+    if let Some(native) = ns_window(window) {
+        native.setIgnoresMouseEvents(false);
+    }
+    place_panel(window, width, height);
+}
+
+/// The panel at `size` points, centered on the screen under the pointer, over everything. It moves with whatever Space is showing, full-screen ones included.
+fn place_panel(window: &gpui::Window, width: f64, height: f64) {
     use objc2_app_kit::{NSEvent, NSScreen, NSWindowCollectionBehavior};
     use objc2_foundation::{NSPoint, NSRect, NSSize};
     let (Some(native), Some(mtm)) = (ns_window(window), MainThreadMarker::new()) else {
-        log(format_args!("show_panel: no native window"));
+        log(format_args!("place_panel: no native window"));
         return;
     };
     let at = NSEvent::mouseLocation();

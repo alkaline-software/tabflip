@@ -36,6 +36,8 @@ pub struct Switcher {
     delay_done: bool,
     shown: bool,
     released: bool,
+    /// The windows in are this round's own look, not the ones remembered from the last.
+    fresh: bool,
 }
 
 impl Switcher {
@@ -96,17 +98,28 @@ impl Switcher {
         self.finish()
     }
 
-    /// The round's windows are in. They may come twice: first the ones
-    /// remembered from before, at once, then a fresh look, which replaces
-    /// them.
+    /// The round's own look at the windows is in, replacing any remembered ones.
     pub fn listed(&mut self, round: u64, len: usize) -> Option<Effect> {
         if !self.active || round != self.round {
             return None;
         }
         self.len = Some(len);
+        self.fresh = true;
         if self.released {
             return self.finish();
         }
+        if self.shown {
+            return Some(Effect::Redraw);
+        }
+        self.show_if_ready()
+    }
+
+    /// The windows remembered from the last look, in at once while the round's own look is out. They may be shown and moved through, but a pick waits for the fresh look: a window opened since the last look is missing from them, and a quick press would go to the wrong one.
+    pub fn remembered(&mut self, round: u64, len: usize) -> Option<Effect> {
+        if !self.active || round != self.round || self.fresh {
+            return None;
+        }
+        self.len = Some(len);
         if self.shown {
             return Some(Effect::Redraw);
         }
@@ -135,8 +148,8 @@ impl Switcher {
         if !self.active {
             return None;
         }
-        if self.len.is_none() {
-            // Picked as soon as the windows are in.
+        if !self.fresh {
+            // Picked as soon as the round's own look is in.
             self.released = true;
             return None;
         }
@@ -183,6 +196,26 @@ mod tests {
         assert_eq!(s.listed(1, 4), None);
         assert_eq!(s.release(), Some(Focus(1)));
         assert!(!s.is_active());
+    }
+
+    #[test]
+    fn a_pick_on_the_remembered_windows_waits_for_the_fresh_look() {
+        let mut s = Switcher::default();
+        s.trigger(false);
+        assert_eq!(s.remembered(1, 3), None);
+        assert_eq!(s.release(), None);
+        assert_eq!(s.listed(1, 4), Some(Focus(1)));
+    }
+
+    #[test]
+    fn the_remembered_windows_show_while_the_fresh_look_is_out() {
+        let mut s = Switcher::default();
+        s.trigger(false);
+        assert_eq!(s.delay_passed(1), None);
+        assert_eq!(s.remembered(1, 3), Some(Show));
+        assert_eq!(s.step(1), Some(Redraw));
+        assert_eq!(s.listed(1, 3), Some(Redraw));
+        assert_eq!(s.release(), Some(Focus(2)));
     }
 
     #[test]

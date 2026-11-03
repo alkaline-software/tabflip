@@ -5,19 +5,20 @@ About `crates/tabflip-core/` (`shortcut.rs`, `label.rs`, `order.rs`, `switcher.r
 ## Rules
 
 - **The core decides, the app carries out.** Every rule about which window comes first, what a row says and what a key does is a pure function or a state machine in `tabflip-core`, with tests. The app reads the Mac, hands the core plain data, and does the `Effect` it gets back. A change of behavior starts as a core test.
-- **The list never waits for a look.** A round lists the windows last looked at at once, those still on screen or put away, and replaces them when a fresh look comes back from the background executor. An app slow to answer never keeps the list from showing.
+- **The list never waits for a look, and a pick always does.** A round lists the windows last looked at at once, those still on screen or put away (`Switcher::remembered`), and replaces them when its own look comes back from the background executor (`Switcher::listed`). An app slow to answer never keeps the list from showing. A pick made before the round's own look is in waits for it: a window opened since the last look is missing from the remembered ones, and a quick press would go to the wrong window.
+- **The windows are looked at only when a round begins.** A look asks every app for its windows, and each app must answer, so it is not taken at every app switch. A round's own look takes 3 to 35 ms, in before the list is due (120 ms) and before a quick press is let go (about 80 ms).
 - **The window selected stays selected** when a fresh look replaces the rows (`Switcher::keep`).
 - **Settings are read at launch and written on each change** (`Config::save`); a field that does not parse falls back to its default, never the whole file. `TABFLIP_HOME` moves the folder, for tests and probes.
 
 ## A round
 
 1. **The shortcut's key is pressed** with its modifiers held. The tap swallows it and sends `Key::Trigger`; the switcher begins a round (`Effect::Begin`) with a number of its own.
-2. **The windows are listed**: the known ones at once, then a fresh look (`Controller::look`: the apps, the stack, each app's windows, the window in front). Each answer is tagged with its round, and one from an older round is dropped.
+2. **The windows are listed**: the remembered ones at once, then the round's own look (`Controller::look`: the apps, the stack, each app's windows, the window in front). Each answer is tagged with its round, and one from an older round is dropped. The list's window goes on screen, clear, at the same moment (`Panel::ready`, `docs/platform.md`, The list's window).
 3. **The list shows** once both the appear delay (120 ms by default, `appear_delay_ms`) has passed and the windows are in (`Effect::Show`). A quick press and release picks before the delay, and the list never shows.
 4. **Tab, ⇧Tab, the arrows and the pointer** move the selection (`Effect::Redraw`). Steps taken before the windows are in are counted from the first window and kept.
 5. **Letting go of the modifiers, or Return,** picks the selected window (`Effect::Focus`): it is noted as just used and brought to the front off the main thread (`docs/platform.md`, Focus). A click on a row picks that row. Escape closes with nothing changed.
 
-Between rounds, each time another app comes forward, the windows are looked at again (`Controller::refresh`), so the next round lists them at once. A look asked for while one is under way is taken when that one is back.
+Between rounds, each time another app comes forward, only that app is asked which window is in front, off the main thread, and the window is noted as just used (`Controller::app_activated`), so a window put away later keeps its place among the recent. The remembered windows are the last round's look, or the one taken when the tap starts (`Controller::refresh`).
 
 ## Which window comes first
 
