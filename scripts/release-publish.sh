@@ -21,7 +21,7 @@ sha=${state##* }
 
 for a in arm64 x64; do
   img="dist/tabflip-mac-$a.dmg"
-  [[ -f $img ]] || fail "$img is missing (WORKFLOW.md)"
+  [[ -f $img ]] || fail "$img is missing (docs/release.md)"
   spctl -a -t open --context context:primary-signature -v $img 2>&1 | grep -q "Notarized Developer ID" || fail "$img is not notarized"
   xcrun stapler validate $img > /dev/null || fail "$img has no stapled ticket"
   (( $(stat -f %m $img) >= $(git log -1 --format=%ct "v$v") )) || fail "$img is older than the commit v$v points at; rebuild it"

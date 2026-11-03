@@ -1,4 +1,4 @@
-//! How the list looks: its size, and the colour of the selected row.
+//! How the list looks: its size, and the color of the selected row.
 //!
 //! Both are kept in the config as text, so a value from a newer or
 //! hand-edited file that does not parse falls back to the default rather
@@ -43,23 +43,21 @@ impl Size {
     }
 }
 
-/// A highlight colour offered by name: the system's own colours, each in
-/// its light and dark appearance, as `0xRRGGBB`.
+/// A color the list's accent is offered in by name, each in its light and dark appearance, as `0xRRGGBB`. All seven are one family at the window's accent's weight: OKLCH lightness 0.52 in the light appearance and 0.55 to 0.56 on the dark list, chroma eased for the green and the teal, orange at 0.56 and 0.58, where it is not brown. White reads on each at 4.5 to 1 or better. Blue, the first and the default, is the window's own sapphire (`docs/design.md`, The list's own colors).
 pub struct Preset {
     pub name: &'static str,
     pub light: u32,
     pub dark: u32,
 }
 
-pub const PRESETS: [Preset; 8] = [
-    Preset { name: "Blue", light: 0x007aff, dark: 0x0a84ff },
-    Preset { name: "Purple", light: 0xaf52de, dark: 0xbf5af2 },
-    Preset { name: "Pink", light: 0xff2d55, dark: 0xff375f },
-    Preset { name: "Red", light: 0xff3b30, dark: 0xff453a },
-    Preset { name: "Orange", light: 0xff9500, dark: 0xff9f0a },
-    Preset { name: "Green", light: 0x34c759, dark: 0x30d158 },
-    Preset { name: "Teal", light: 0x30b0c7, dark: 0x40c8e0 },
-    Preset { name: "Graphite", light: 0x8e8e93, dark: 0x98989d },
+pub const PRESETS: [Preset; 7] = [
+    Preset { name: "Blue", light: 0x2a69b4, dark: 0x3475c4 },
+    Preset { name: "Purple", light: 0x7b51a6, dark: 0x885cb5 },
+    Preset { name: "Pink", light: 0xa4406d, dark: 0xb14c79 },
+    Preset { name: "Orange", light: 0xad5c15, dark: 0xb3621e },
+    Preset { name: "Green", light: 0x3e7941, dark: 0x448247 },
+    Preset { name: "Teal", light: 0x147684, dark: 0x177f8e },
+    Preset { name: "Graphite", light: 0x626a73, dark: 0x6e757f },
 ];
 
 pub const DEFAULT_HIGHLIGHT: &str = "blue";
@@ -86,26 +84,26 @@ pub fn parse_hex(text: &str) -> Option<u32> {
     }
 }
 
-/// `0xRRGGBB` as the config writes a colour of one's own: `#rrggbb`.
+/// `0xRRGGBB` as the config writes a color of one's own: `#rrggbb`.
 pub fn to_hex(rgb: u32) -> String {
     format!("#{:06x}", rgb & 0xff_ffff)
 }
 
-/// Whether a config value is a highlight: a preset's name or a hex colour.
+/// Whether a config value is a highlight: a preset's name or a hex color.
 pub fn is_highlight(text: &str) -> bool {
     preset(text).is_some() || parse_hex(text).is_some()
 }
 
 /// The highlight a config value gives, in the light or dark appearance:
-/// a preset follows the appearance, a hex colour is the same in both, and
+/// a preset follows the appearance, a hex color is the same in both, and
 /// anything else is Blue.
 pub fn highlight(text: &str, dark: bool) -> u32 {
     let pick = |p: &Preset| if dark { p.dark } else { p.light };
     preset(text).map(pick).or_else(|| parse_hex(text)).unwrap_or_else(|| pick(&PRESETS[0]))
 }
 
-/// Whether text on this colour should be dark rather than white, so it
-/// can be read on a pale highlight (yellow, light grey) as on a deep one.
+/// Whether text on this color should be dark rather than white, so it
+/// can be read on a pale highlight (yellow, light gray) as on a deep one.
 pub fn dark_text_on(rgb: u32) -> bool {
     let lin = |c: u32| {
         let c = c as f32 / 255.;
@@ -113,7 +111,7 @@ pub fn dark_text_on(rgb: u32) -> bool {
     };
     let l = 0.2126 * lin(rgb >> 16 & 0xff) + 0.7152 * lin(rgb >> 8 & 0xff) + 0.0722 * lin(rgb & 0xff);
     // Well above where black and white have equal contrast (0.18): the
-    // system's own colours, its green and orange included, keep white
+    // system's own colors, its green and orange included, keep white
     // text, as macOS draws them; only pale ones take dark.
     l > 0.5
 }
@@ -146,17 +144,17 @@ mod tests {
 
     #[test]
     fn presets_follow_the_appearance_hex_does_not() {
-        assert_eq!(highlight("blue", false), 0x007aff);
-        assert_eq!(highlight("Blue", true), 0x0a84ff);
-        assert_eq!(highlight("green", true), 0x30d158);
+        assert_eq!(highlight("blue", false), 0x2a69b4);
+        assert_eq!(highlight("Blue", true), 0x3475c4);
+        assert_eq!(highlight("green", true), 0x448247);
         assert_eq!(highlight("#123456", false), 0x123456);
         assert_eq!(highlight("#123456", true), 0x123456);
-        assert_eq!(highlight("nonsense", true), 0x0a84ff);
+        assert_eq!(highlight("nonsense", true), 0x3475c4);
         assert!(is_highlight("teal") && is_highlight("#fff") && !is_highlight("teel"));
     }
 
     #[test]
-    fn text_is_dark_only_on_pale_colours() {
+    fn text_is_dark_only_on_pale_colors() {
         assert!(dark_text_on(0xffd60a)); // yellow
         assert!(dark_text_on(0xffffff));
         assert!(!dark_text_on(0x0a84ff));

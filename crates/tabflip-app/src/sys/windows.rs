@@ -119,8 +119,7 @@ pub fn on_screen() -> Vec<u32> {
     out
 }
 
-/// The focused window's number in the app in front: what the switcher
-/// remembers as just used.
+/// The focused window's number in the app in front: what the switcher remembers as just used. An Accessibility question, so it is asked off the main thread: the app in front may be the one that hangs.
 pub fn focused() -> Option<u32> {
     let app = NSWorkspace::sharedWorkspace().frontmostApplication()?;
     let el = Element::app(app.processIdentifier())?;

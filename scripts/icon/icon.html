@@ -53,15 +53,25 @@
 </div>
 
 <script>
-// The icon is drawn in a 100-unit box. `bleed` fills the whole canvas as a
-// square; otherwise the body is an inset squircle with a shadow (the app icon).
-// The ground and the line colours are the studio's, as in Emaki and Kotoba;
-// the lavender is tabflip's accent, its dark shade, which stands clear of
-// the navy.
-const NAVY = '#2b2556', AMBER = '#ffb83e', VIOLET = '#6a3fd9', LAVENDER = '#b09de6', CREAM = '#f8efe0';
+// The icon is drawn in a 100-unit box. `bleed` fills the whole canvas as a square, opaque to its corners: the .icns, since macOS masks every app icon to its own rounded square and shows anything transparent as a gray border. Otherwise the body is an inset squircle with a margin and a shadow: the PNGs the window shows.
+//
+// The navy and the amber are the studio's and the same in every icon; tabflip's carries no spark, which crowded the stack (the old candidates still draw it in VIOLET). ACCENT is tabflip's sapphire at its dark shade, which fills the chosen window and stands clear of the navy. The ground is the studio's cream with a fifth of the accent in it (`ground`): ACCENT_LIGHT and ACCENT_DARK are the accent's base shades in the two appearances (docs/design.md, The accent).
+const NAVY = '#2b2556', AMBER = '#ffb83e', VIOLET = '#6a3fd9', ACCENT = '#7daeec', PAPER = '#ffffff';
+const ACCENT_LIGHT = '#2A69B4', ACCENT_DARK = '#7DAEEC';
+const CREAM = ['#fdf8ee', '#f1e4d0'];   // the studio's ground, top left to bottom right
+
+// The ground with the accent in it: each end of the cream mixed with the mean of the accent's two base shades, 16% at the top left and 24% at the bottom right, so the wash deepens toward the shadowed corner.
+function ground(light = ACCENT_LIGHT, dark = ACCENT_DARK) {
+  const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  const hex = c => '#' + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+  const [l, d] = [rgb(light), rgb(dark)];
+  const accent = l.map((v, i) => (v + d[i]) / 2);
+  const mix = (base, t) => hex(rgb(base).map((v, i) => v + (accent[i] - v) * t));
+  return [mix(CREAM[0], 0.16), mix(CREAM[1], 0.24)];
+}
 
 // Which candidate is drawn: see CANDIDATES. 1 is the one in use.
-const VARIANT = 1;
+const VARIANT = 5;
 
 function rr(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -80,7 +90,7 @@ const stroke = (ctx, pts, style, width, cap = 'round') => {
   ctx.stroke();
 };
 
-// four-point spark centred on (cx, cy)
+// four-point spark centered on (cx, cy)
 function sparkle(ctx, cx, cy, r) {
   const k = r * 0.2;
   ctx.beginPath();
@@ -99,7 +109,7 @@ const across = ctx => ctx.getTransform().a * 100;
 // A window: a rounded card stroked at twice the line's width in navy,
 // then filled, so the fill covers the inner half of the line and the line
 // reads 2.6 wide (3.2 below 40 px across, where 2.6 thins to under a
-// pixel). `fill` is the card's own colour.
+// pixel). `fill` is the card's own color.
 function card(ctx, x, y, w, h, fill) {
   ctx.strokeStyle = NAVY; ctx.lineWidth = across(ctx) < 40 ? 6.4 : 5.2; ctx.lineJoin = 'round';
   rr(ctx, x, y, w, h, 6); ctx.stroke();
@@ -114,17 +124,22 @@ function snap(ctx, v) {
 }
 
 // 1. The fanned stack: three windows, each up and to the right of the one
-// behind it, the front one filled with lavender, the one chosen, its title
-// bar the amber stroke. Below 40 px across the back card and the title bar
-// go, and two cards with the lavender fill are what still read.
-const STACK = [[11, 42, 54, 38], [23, 30, 54, 38], [35, 18, 54, 38]];
+// behind it, the front one filled with the accent, the one chosen, its title
+// bar the amber stroke. The stack is centered and kept inside the room the
+// studio's other drawings take (about 16 to 84 across, 20 to 80 down, lines
+// included). Below 40 px across the back card and the title bar go, and the
+// two cards left, centered again, are what still read.
+const STACK = [[18, 45, 44, 30], [28, 35, 44, 30], [38, 25, 44, 30]];
+// The menu bar's pair keeps the proportions it was drawn at: its gap and
+// corners are scaled with it to fill the square.
+const BAR = [[23, 30, 54, 38], [35, 18, 54, 38]];
 function stackGlyph(ctx, arrow) {
   const small = across(ctx) < 40;
-  const cards = small ? STACK.slice(1) : STACK;
+  const cards = small ? STACK.slice(1).map(([x, y, w, h]) => [x - 5, y + 5, w, h]) : STACK;
   cards.forEach(([x, y, w, h], i) => {
     const front = i === cards.length - 1;
     const [sx, sy, sw, sh] = small ? [snap(ctx, x), snap(ctx, y), snap(ctx, w), snap(ctx, h)] : [x, y, w, h];
-    card(ctx, sx, sy, sw, sh, front ? LAVENDER : CREAM);
+    card(ctx, sx, sy, sw, sh, front ? ACCENT : PAPER);
   });
   if (small) return;
   const [x, y] = STACK[2];
@@ -138,7 +153,7 @@ function stackGlyph(ctx, arrow) {
     ctx.stroke();
     stroke(ctx, [[48, 4], [55, 10], [48, 16]], AMBER, 4.5);
   } else {
-    stroke(ctx, [[x + 8, y + 8.5], [x + 24, y + 8.5]], AMBER, 4);
+    stroke(ctx, [[x + 7, y + 7.5], [x + 21, y + 7.5]], AMBER, 4);
   }
 }
 
@@ -146,14 +161,14 @@ function stackGlyph(ctx, arrow) {
 // page being turned, its near edge amber.
 function flipGlyph(ctx) {
   const small = across(ctx) < 40;
-  card(ctx, 18, 30, 56, 42, CREAM);
+  card(ctx, 18, 30, 56, 42, PAPER);
   // the turning window: a parallelogram standing on the flat one's right
   ctx.save();
   ctx.transform(1, 0, -0.45, 0.78, 0, 0);
   const x = 46, y = 24, w = 46, h = 44;
   ctx.strokeStyle = NAVY; ctx.lineWidth = 5.2; ctx.lineJoin = 'round';
   rr(ctx, x, y, w, h, 6); ctx.stroke();
-  ctx.fillStyle = LAVENDER; rr(ctx, x, y, w, h, 6); ctx.fill();
+  ctx.fillStyle = ACCENT; rr(ctx, x, y, w, h, 6); ctx.fill();
   ctx.restore();
   if (!small) stroke(ctx, [[36, 22], [36, 60]], AMBER, 4.5);
 }
@@ -162,11 +177,11 @@ function flipGlyph(ctx) {
 // list looks mid-flip. The title bar is amber.
 function rowsGlyph(ctx) {
   const small = across(ctx) < 40;
-  card(ctx, 14, 20, 72, 60, CREAM);
+  card(ctx, 14, 20, 72, 60, PAPER);
   if (!small) stroke(ctx, [[22, 28.5], [40, 28.5]], AMBER, 4);
   const rows = small ? [[40, false], [52, true], [64, false]] : [[41, false], [55, true], [69, false]];
   for (const [y, lit] of rows) {
-    if (lit) { ctx.fillStyle = LAVENDER; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.fill(); ctx.strokeStyle = NAVY; ctx.lineWidth = 2.6; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.stroke(); }
+    if (lit) { ctx.fillStyle = ACCENT; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.fill(); ctx.strokeStyle = NAVY; ctx.lineWidth = 2.6; rr(ctx, 21, y - 5.5, 58, 11, 4); ctx.stroke(); }
     else stroke(ctx, [[27, y], [27 + (y > 60 ? 22 : 34), y]], NAVY, 3.5);
   }
 }
@@ -175,11 +190,15 @@ function rowsGlyph(ctx) {
 // silhouette with the gap between them cut out, on a transparent square.
 // The system tints it, so only its alpha counts. The pair is scaled to
 // fill the square.
-function stackTemplate(canvas, px) {
+// The same for any pair of cards: the menu bar's image of the two cards
+// in use (`pairTemplate`), and the stack's front two (`stackTemplate`).
+const pairTemplate = (canvas, px) => cardsTemplate(canvas, px, PAIR);
+const stackTemplate = (canvas, px) => cardsTemplate(canvas, px, BAR);
+function cardsTemplate(canvas, px, pair) {
   canvas.width = px; canvas.height = px;
   const ctx = canvas.getContext('2d');
   ctx.scale(px / 100, px / 100);
-  const [[bx, by, bw, bh], [fx, fy, fw, fh]] = [STACK[1], STACK[2]];
+  const [[bx, by, bw, bh], [fx, fy, fw, fh]] = pair;
   // the pair's bounds, fitted to 94 of the 100
   const x0 = bx, y0 = fy, x1 = fx + fw, y1 = by + bh;
   const k = 94 / Math.max(x1 - x0, y1 - y0);
@@ -214,14 +233,57 @@ function rowsTemplate(canvas, px) {
   for (const y of [38, 50, 62]) stroke(ctx, [[26, y], [74, y]], '#000', 6);
 }
 
+// 5. Two cards, the one in use: the window left behind and the one chosen,
+// the front one filled with the accent, its title bar the amber stroke, in
+// the room the studio's other drawings take. The menu bar's image is the
+// same two cards (`pairTemplate`), so the item and the icon are one drawing.
+const PAIR = [[19, 40, 48, 33], [33, 27, 48, 33]];
+function pairGlyph(ctx) {
+  const small = across(ctx) < 40;
+  const sn = v => small ? snap(ctx, v) : v;
+  PAIR.forEach(([x, y, w, h], i) => card(ctx, sn(x), sn(y), sn(w), sn(h), i ? ACCENT : PAPER));
+  if (!small) stroke(ctx, [[PAIR[1][0] + 8, PAIR[1][1] + 8], [PAIR[1][0] + 24, PAIR[1][1] + 8]], AMBER, 4);
+}
+
+// 6. A hand of cards: three windows fanned from one point below, as cards
+// are held, the top one chosen.
+function handGlyph(ctx) {
+  const small = across(ctx) < 40;
+  const angles = small ? [-9, 9] : [-13, 0, 13];
+  angles.forEach((deg, i) => {
+    const front = i === angles.length - 1;
+    ctx.save();
+    ctx.translate(50, 104); ctx.rotate(deg * Math.PI / 180); ctx.translate(-50, -104);
+    card(ctx, 33, 33, 34, 31, front ? ACCENT : PAPER);
+    if (front && !small) stroke(ctx, [[39, 40.5], [51, 40.5]], AMBER, 3.6);
+    ctx.restore();
+  });
+}
+
+// 7. The list: one window with three rows, the middle one lit with the
+// accent, as the list looks mid-flip, in the room the others keep.
+function listGlyph(ctx) {
+  const small = across(ctx) < 40;
+  card(ctx, 18, 24, 64, 52, PAPER);
+  if (!small) stroke(ctx, [[26, 32.5], [42, 32.5]], AMBER, 4);
+  const rows = small ? [[44, false], [56, true], [68, false]] : [[45, false], [56.5, true], [68, false]];
+  for (const [y, lit] of rows) {
+    if (lit) { ctx.fillStyle = ACCENT; rr(ctx, 25, y - 5.5, 50, 11, 4); ctx.fill(); ctx.strokeStyle = NAVY; ctx.lineWidth = small ? 3.2 : 2.6; rr(ctx, 25, y - 5.5, 50, 11, 4); ctx.stroke(); }
+    else stroke(ctx, [[30, y], [30 + (y > 60 ? 22 : 32), y]], NAVY, small ? 4 : 3.5);
+  }
+}
+
 const CANDIDATES = {
-  1: { name: 'Fanned stack', desc: 'Three windows, each up and to the right of the one behind it, as a hand flips through them. The front one is the one chosen, filled with lavender, its title bar the amber stroke. Below 40 px the back window and the title bar go, and two cards with the lavender fill are what still read.', glyph(ctx) { stackGlyph(ctx, false); spark(20, 21)(ctx); }, template: stackTemplate },
+  1: { name: 'Fanned stack', desc: 'Three windows, each up and to the right of the one behind it, as a hand flips through them. Its two front cards were already the menu bar item, so the icon became those two.', glyph(ctx) { stackGlyph(ctx, false); }, template: stackTemplate },
   2: { name: 'Page turn', desc: 'A window lying flat and one turning on its right edge, as a page is turned, its near edge amber.', glyph(ctx) { flipGlyph(ctx); spark(20, 22)(ctx); }, template: flipTemplate },
-  3: { name: 'Lit row', desc: 'One window with three rows, the middle row lit with lavender, as the list looks mid-flip: the first icon\'s drawing in the studio\'s manner.', glyph(ctx) { rowsGlyph(ctx); spark(84, 14)(ctx); }, template: rowsTemplate },
+  3: { name: 'Lit row', desc: 'One window with three rows, the middle row lit with the accent, as the list looks mid-flip: the first icon\'s drawing in the studio\'s manner.', glyph(ctx) { rowsGlyph(ctx); spark(84, 14)(ctx); }, template: rowsTemplate },
+  5: { name: 'Two cards', desc: 'The window left behind and the one chosen, the front one filled with the sapphire, its title bar the amber stroke. The menu bar item is the same two cards. Below 40 px the title bar goes and the edges land on whole pixels.', glyph(ctx) { pairGlyph(ctx); }, template: pairTemplate },
+  6: { name: 'Hand of cards', desc: 'Three windows fanned from one point below, as a hand of cards is held; the top one is chosen.', glyph(ctx) { handGlyph(ctx); }, template: stackTemplate },
+  7: { name: 'The list', desc: 'One window with three rows, the middle one lit with the accent, as the list looks mid-flip, kept in the room the studio\'s other drawings take.', glyph(ctx) { listGlyph(ctx); }, template: rowsTemplate },
   4: { name: 'Fanned stack, arrow', desc: 'The fanned stack with the amber stroke as an arrow that comes off the back of the stack and lands on the front. It crowded the spark and read as a refresh sign.', glyph(ctx) { stackGlyph(ctx, true); spark(20, 21)(ctx); }, template: stackTemplate },
 };
 
-const ICON = { ...CANDIDATES[VARIANT], bg: ['#fdf8ee', '#f1e4d0'] };  // top left to bottom right
+const ICON = { ...CANDIDATES[VARIANT], bg: ground() };  // the cream with the accent in it, top left to bottom right
 const drawTemplate = ICON.template;
 
 function drawIcon(canvas, icon, px, bleed) {

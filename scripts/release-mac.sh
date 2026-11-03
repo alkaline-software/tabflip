@@ -3,7 +3,7 @@
 # runtime, a disk image laid out by Finder (the app, an arrow, the
 # Applications link, over scripts/dmg/background.png), and (with
 # --notarize) notarization and a stapled ticket. Run on the machine of
-# whoever holds the Developer ID (WORKFLOW.md); CI runs it with
+# whoever holds the Developer ID (docs/release.md); CI runs it with
 # --identity - for its ad-hoc drafts.
 #
 #   scripts/release-mac.sh [--target <triple>] [--no-build] [--identity <name>|-]
@@ -63,7 +63,7 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 
 # The disk image. Finder lays the window out on a read-write image (the
 # layout lives in the volume's .DS_Store, and only Finder writes one Finder
-# will honour), then hdiutil compresses it read-only. The window is 660x420
+# will honor), then hdiutil compresses it read-only. The window is 660x420
 # points over scripts/dmg/background.png, which is that size at 2x.
 VOLNAME="tabflip v$VERSION"
 STAGE=dist/dmg-staging

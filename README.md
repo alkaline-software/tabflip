@@ -2,10 +2,7 @@
 
 **Switch between windows, not apps.**
 
-The Mac's ⌘Tab moves between apps. With two Chrome windows open, one on
-Gmail and one on Facebook, it can't take you to either one. tabflip can:
-hold ⌘ and press Tab, and a small list shows every window, each with its
-app's icon and a word or two for what is in it.
+The Mac's ⌘Tab moves between apps. With two Chrome windows open, one on Gmail and one on Facebook, it can't take you to either one. tabflip can: hold ⌘ and press Tab, and a small list shows every window, each with its app's icon and a word or two for what is in it.
 
 ```
  ◉  Gmail                Google Chrome
@@ -14,82 +11,23 @@ app's icon and a word or two for what is in it.
  📁 Downloads            Finder
 ```
 
-Let go of ⌘ and that window comes to the front. A quick ⌘Tab goes straight
-to the window you used last, with no list at all. ⌘⇧Tab or ⌘\` moves up;
-Esc cancels; the arrows and the pointer work too.
+Let go of ⌘ and that window comes to the front. A quick ⌘Tab goes straight to the window you used last, with no list at all. ⌘⇧Tab or ⌘\` moves up; Esc cancels; the arrows and the pointer work too.
 
 ## Install
 
-Download the disk image from the
-[latest release](https://github.com/alkaline-software/tabflip/releases/latest)
-and drag tabflip to Applications:
+Download the disk image from the [latest release](https://github.com/alkaline-software/tabflip/releases/latest) and drag tabflip to Applications: `tabflip-mac-arm64.dmg` for Apple silicon, `tabflip-mac-x64.dmg` for an Intel Mac.
+
+tabflip lives in the menu bar. Its Settings ask for **Accessibility**, which it needs to read window titles, bring a window forward, and see the shortcut in every app. That is the only permission it asks for: no Screen Recording, and nothing leaves the Mac. In Settings you can pick another shortcut, the list's size and accent color, and the language; tabflip updates itself from About at a press.
+
+## Building it
+
+Rust, with [GPUI](https://www.gpui.rs) and [gpui-component](https://github.com/longbridge/gpui-component), and [objc2](https://github.com/madsmtm/objc2) for the macOS calls.
 
 ```
-tabflip-mac-arm64.dmg    Apple silicon
-tabflip-mac-x64.dmg      Intel Mac
+cargo test -p tabflip-core -p tabflip-app
+scripts/dev-app.sh
 ```
 
-On first launch macOS asks to give tabflip **Accessibility**, in System
-Settings → Privacy & Security. It needs it to read window titles, bring a
-window forward, and see the shortcut in every app. That is the only
-permission it asks for: no Screen Recording, and nothing leaves the Mac.
-
-## Settings
-
-tabflip lives in the menu bar and stays out of the Dock. It shows in the
-Dock only while Settings are open. A click on the menu bar item opens
-Settings; a right click shows a menu of the sections and Quit. Opening
-tabflip again from Finder or Spotlight opens Settings too (the way back
-if the menu bar item is hidden). There are four sections:
-
-- **General**
-  - **Shortcut.** ⌘Tab by default, which turns off the Mac's own ⌘Tab
-    while tabflip runs (it comes back when tabflip quits). Click the
-    shortcut and press another: ⌥Tab, ⌃Tab, ⌘\`, any modifier and a key.
-  - **Launch at login.**
-  - **Show in menu bar**, and **Swap clicks** (the menu on a left click,
-    Settings on a right one).
-  - **Accessibility:** whether it is allowed, and Allow if not.
-  - **Language**, at the top right: the system's, or English, Chinese
-    (Simplified or Traditional), Japanese, Korean, French, German or
-    Spanish. Only Settings change language; the list shows each window's
-    own title.
-- **Customize**
-  - **Size.** Small, Medium or Large: rows, icons and text all grow
-    together.
-  - **Highlight.** The colour of the selected row: one of the system's
-    colours (Blue, Purple, Pink, Red, Orange, Green, Teal, Graphite),
-    which follow light and dark mode, or any colour of your own as a hex
-    code (`#ff8800`). Text on a pale colour turns dark so it stays
-    readable. A preview row shows both.
-- **Updates.** Checks GitHub for a newer release, by hand or once a day.
-  A newer version is installed at a press, and tabflip opens again as
-  it; nothing is fetched or installed without that press.
-- **About.**
-
-## How it is built
-
-Rust, with [GPUI](https://www.gpui.rs) (the Zed editor's UI framework) and
-[gpui-component](https://github.com/longbridge/gpui-component), and
-[objc2](https://github.com/madsmtm/objc2) for the macOS calls.
-
-```
-crates/tabflip-core   the shortcut, the labels, the order, the switcher's states; tested anywhere
-crates/tabflip-app    the panel, Settings, the languages, and every macOS call (src/sys/)
-scripts/              the dev bundle, the icon, releases
-docs/design.md        the design standard: palette, icon, window, list, motion, languages
-```
-
-## Development
-
-```
-cargo test -p tabflip-core
-cargo test -p tabflip-app       the languages' table
-scripts/dev-app.sh              build, bundle, sign and open the dev app
-target/debug/tabflip --list     the windows as the switcher sees them
-```
-
-`AGENTS.md` explains the code and the reasoning behind it. `WORKFLOW.md` is
-how a release is cut.
+`AGENTS.md` explains the code and where each part's doc is; `docs/release.md` is how a release is cut.
 
 MIT.

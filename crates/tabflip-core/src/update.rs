@@ -1,7 +1,7 @@
 //! Keeping tabflip current: whether a newer one is out, fetching its disk
 //! image, and putting it in place.
 //!
-//! Releases live on GitHub under stable asset names (WORKFLOW.md), so no
+//! Releases live on GitHub under stable asset names (docs/release.md), so no
 //! API is needed: `releases/latest` answers with a redirect to the newest
 //! published release's tag, and its installer is at
 //! `releases/download/v<version>/<asset>`. Drafts are not seen until they

@@ -162,7 +162,7 @@ mod tests {
 
     /// Every phrase the app asks for is in the table: each `t("…")` and
     /// `tf("…"` in its sources, and the words the core hands the window
-    /// (what is wrong with a shortcut, the sizes, the colours' names).
+    /// (what is wrong with a shortcut, the sizes, the colors' names).
     #[test]
     fn every_phrase_asked_for_is_in_the_table() {
         let table = table();

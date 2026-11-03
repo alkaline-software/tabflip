@@ -84,7 +84,7 @@ pub fn activations() -> futures::channel::mpsc::UnboundedReceiver<()> {
     rx
 }
 
-/// The switcher's panel placed: `size` points, centred on the screen
+/// The switcher's panel placed: `size` points, centered on the screen
 /// under the pointer, and shown over everything without taking the
 /// keyboard. It moves with whatever Space is showing, full-screen ones
 /// included.

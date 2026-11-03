@@ -2,7 +2,7 @@
 # A signing certificate of your own for dev builds, "tabflip dev", made once
 # and kept in the login keychain. Signed with it, every dev build is the
 # same app to macOS, so Accessibility, once allowed, stays allowed.
-# Not for releases: those are signed with a Developer ID (WORKFLOW.md).
+# Not for releases: those are signed with a Developer ID (docs/release.md).
 #
 #   scripts/make-dev-cert.sh
 #

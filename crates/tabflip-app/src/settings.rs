@@ -3,7 +3,8 @@
 //! under the window's traffic lights, and the chosen section's groups of
 //! rows on cards at the right. General is the shortcut, how the app
 //! stands on this Mac and Accessibility; Customize is how the list looks;
-//! Updates looks for a newer release; About says who makes it. The
+//! About is the title card, the source and the notes, and the updates,
+//! the same in every product of the studio. The
 //! window's language is chosen from a list at the right of General's
 //! title.
 //!
@@ -29,23 +30,23 @@ use tabflip_core::update;
 use crate::controller::{self, Controller};
 use crate::i18n::{self, t, tf};
 use crate::sys;
-use crate::ui::{float_shadow, key_caps, page_in, pill, small_pill, swallow_click, Press, MENU_IN, MENU_OUT, TURN};
+use crate::ui::{float_shadow, key_caps, page_in, pill, small_pill, swallow_click, wordmark, Press, MENU_IN, MENU_OUT, TURN};
 
 /// The settings' sections, in the rail's order: key, name (the key of
 /// its other languages), icon.
 pub const SECTIONS: &[(&str, &str, &str)] = &[
     ("general", "General", "icons/settings.svg"),
     ("customize", "Customize", "icons/sparkles.svg"),
-    ("updates", "Updates", "icons/redo-2.svg"),
     ("about", "About", "icons/info.svg"),
 ];
 
 /// The window's key context: Escape closes a list that is open.
 pub const KEY_CONTEXT: &str = "Settings";
 
-const WINDOW_W: Pixels = px(780.);
-const WINDOW_H: Pixels = px(560.);
-const WINDOW_MIN: gpui::Size<Pixels> = gpui::Size { width: px(680.), height: px(440.) };
+/// The size every product's settings open at, so the studio's windows are one size. Never narrower, since the rows are laid out for that width; down to 460 tall, where the page scrolls.
+const WINDOW_W: Pixels = px(820.);
+const WINDOW_H: Pixels = px(600.);
+const WINDOW_MIN: gpui::Size<Pixels> = gpui::Size { width: WINDOW_W, height: px(460.) };
 /// The rail's width, and the page's margin at either side.
 const RAIL_W: Pixels = px(190.);
 const PAGE_X: Pixels = px(36.);
@@ -68,7 +69,7 @@ pub struct Settings {
     focus: FocusHandle,
     login: bool,
     login_error: Option<SharedString>,
-    /// A highlight colour of one's own, typed as hex.
+    /// A highlight color of one's own, typed as hex.
     hex: Entity<InputState>,
     hex_error: bool,
     scroll: ScrollHandle,
@@ -93,7 +94,7 @@ pub struct Settings {
 impl Settings {
     fn new(controller: Entity<Controller>, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let observe = cx.observe(&controller, |_, _, cx| cx.notify());
-        // The field shows the colour in use when it is one of one's own.
+        // The field shows the color in use when it is one of one's own.
         let current = controller.read(cx).config.highlight().to_string();
         let typed = if look::preset(&current).is_none() { current } else { String::new() };
         let hex = cx.new(|cx| InputState::new(window, cx).placeholder("#rrggbb").default_value(typed));
@@ -102,7 +103,7 @@ impl Settings {
                 return;
             }
             let text = hex.read(cx).value().to_string();
-            // Kept as soon as it is a whole colour; a part-typed one is only
+            // Kept as soon as it is a whole color; a part-typed one is only
             // marked once it is as long as a whole one.
             let ok = look::parse_hex(&text).is_some() && this.controller.update(cx, |c, cx| c.set_highlight(&text, cx));
             this.hex_error = !ok && !text.trim().is_empty() && text.trim().trim_start_matches('#').len() >= 6;
@@ -288,7 +289,6 @@ impl Render for Settings {
         };
         let rows = match section {
             "customize" => self.customize(window, cx),
-            "updates" => self.updates(cx),
             "about" => self.about(cx),
             _ => self.general(cx),
         };
@@ -350,7 +350,7 @@ impl Render for Settings {
 impl Settings {
     /// The rail of sections at the window's left, under its traffic
     /// lights: an icon and a name per section, the chosen one on a plate.
-    /// General wears a dot while Accessibility is missing, and Updates
+    /// General wears a dot while Accessibility is missing, and About
     /// while a newer tabflip waits; each comes and goes in motion.
     fn rail(&self, current: &'static str, cx: &mut Context<Self>) -> AnyElement {
         let theme = cx.theme().clone();
@@ -371,7 +371,7 @@ impl Settings {
         )
         .children(SECTIONS.iter().map(|&(key, label, icon)| {
             let active = key == current;
-            let dot = (key == "general" && wanting) || (key == "updates" && waiting);
+            let dot = (key == "general" && wanting) || (key == "about" && waiting);
             let dot = self.fade(&format!("dot-{key}"), dot, div().size(px(7.)).flex_shrink_0().rounded_full().bg(theme.primary), cx);
             h_flex()
                 .id(SharedString::from(format!("rail-{key}")))
@@ -503,7 +503,7 @@ impl Settings {
         ]
     }
 
-    /// Customize: the list's size and the selected row's colour, with a
+    /// Customize: the list's size and the selected row's color, with a
     /// row as the list will draw it.
     fn customize(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Vec<AnyElement> {
         let theme = cx.theme().clone();
@@ -568,9 +568,9 @@ impl Settings {
             .child(div().size(px(14.)).flex_shrink_0().rounded_full().bg(rgb(look::highlight(&highlight, dark))).when(!own, |d| d.opacity(0.)))
             .child(div().flex_1().min_w_0().cursor_text().child(Input::new(&self.hex).appearance(false).bordered(false).small()))
             .into_any_element();
-        let hex_note = if self.hex_error { Some(div().text_color(theme.danger).child(t("Not a colour: #rrggbb or #rgb.")).into_any_element()) } else { Some(div().child(t("Any colour, as hex.")).into_any_element()) };
+        let hex_note = if self.hex_error { Some(div().text_color(theme.danger).child(t("Not a color: #rrggbb or #rgb.")).into_any_element()) } else { Some(div().child(t("Any color, as hex.")).into_any_element()) };
 
-        // A row as the list draws it, at the chosen size and colour.
+        // A row as the list draws it, at the chosen size and color.
         let preview = {
             let k = size_now.scale();
             let pick = look::highlight(&highlight, dark);
@@ -593,25 +593,50 @@ impl Settings {
             Some(t("The list")),
             vec![
                 line(t("Size"), None, sizes, &theme),
-                line(t("Highlight"), None, swatches, &theme),
-                line(t("Your own colour"), hex_note, hex, &theme),
+                line(t("Accent"), None, swatches, &theme),
+                line(t("Your own color"), hex_note, hex, &theme),
                 line(t("Preview"), None, preview, &theme),
             ],
             &theme,
         )]
     }
 
-    /// Updates: the version, with what a check found, and one button that
-    /// is Check for updates until a check finds something and Update to x
-    /// after, in the same place; whether to look once a day. The update
-    /// is fetched and put in place by tabflip itself, which then opens
-    /// again as the new version.
-    fn updates(&mut self, cx: &mut Context<Self>) -> Vec<AnyElement> {
+    /// About, the same in every product: the title card, set as a film's first one is; under it the pills to the source and the release's notes; then the updates, what a check found with the one button that checks or installs, and whether to look once a day. The update is fetched and put in place by tabflip itself, which then opens again as the new version.
+    fn about(&mut self, cx: &mut Context<Self>) -> Vec<AnyElement> {
         let theme = cx.theme().clone();
+        let current = update::current_version();
+        let hover = theme.link;
+        let site = update::repo_page();
+        let open_site = {
+            let site = site.clone();
+            move |_: &ClickEvent, _: &mut Window, _: &mut App| sys::open_url(&site)
+        };
+        let studio = div()
+            .id("about-studio")
+            .cursor_pointer()
+            .text_color(theme.foreground)
+            .text_decoration_1()
+            .text_decoration_color(theme.foreground.opacity(0.35))
+            .hover(move |s| s.text_color(hover).text_decoration_color(hover))
+            .on_click(|_, _, _| sys::open_url("https://github.com/alkaline-software"))
+            .child("Alkaline Software")
+            .into_any_element();
+        let title = v_flex()
+            .w_full()
+            .items_center()
+            .pt(px(30.))
+            .pb(px(28.))
+            .child(weave(t("{studio} presents"), vec![("studio", studio)], h_flex().text_size(px(14.)).text_color(theme.muted_foreground)))
+            .child(div().id("about-icon").mt(px(18.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site.clone()).child(img("icon/app-large.png").size(px(88.)).flex_shrink_0()))
+            .child(div().id("about-name").mt(px(6.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site).child(wordmark("tabflip", 42., theme.primary, cx)))
+            .child(div().mt(px(4.)).text_size(px(12.5)).text_color(theme.muted_foreground).child(tf("Version {v}", &[("v", &current)])))
+            .into_any_element();
+        let go = |id: &'static str, icon: &'static str, label: &'static str, url: String| small_pill(id, icon, label, Press::Quiet, false, &theme).h(px(28.)).on_click(move |_, _, _| sys::open_url(&url));
+        let pills = h_flex().w_full().justify_center().pt(px(4.)).gap(px(8.)).child(go("about-source", "icons/github.svg", "GitHub", site.clone())).child(go("about-notes", "icons/file-text.svg", t("Release Notes"), update::release_page(current))).into_any_element();
+
         let c = self.controller.read(cx);
         let auto_on = c.config.check_updates;
         let u = &c.update;
-        let current = update::current_version();
         let said: String = if u.installing {
             match u.progress {
                 Some((done, Some(total))) if total > 0 => tf("Downloading… {p}%", &[("p", &(done * 100 / total))]),
@@ -632,7 +657,6 @@ impl Settings {
             String::new()
         };
         let (checking, installing, available) = (u.checking, u.installing, u.available.clone());
-        let version_line: SharedString = if said.is_empty() { format!("tabflip {current}") } else { format!("tabflip {current} · {said}") }.into();
         let link = |id: &'static str, label: &'static str, url: String| {
             let (ink, hover) = (theme.muted_foreground, theme.primary);
             div()
@@ -646,7 +670,9 @@ impl Settings {
                 .on_click(move |_, _, _| sys::open_url(&url))
                 .child(label)
         };
-        let version_note = v_flex().gap(px(1.)).child(div().child(version_line)).when_some(available.clone(), |d, v| d.child(link("update-notes", t("Release notes"), update::release_page(&v)))).into_any_element();
+        let note = (!said.is_empty() || available.is_some()).then(|| {
+            v_flex().gap(px(1.)).when(!said.is_empty(), |d| d.child(div().child(said))).when_some(available.clone(), |d, v| d.child(link("update-notes", t("Release notes"), update::release_page(&v)))).into_any_element()
+        });
         let button = match (available, installing) {
             (Some(v), false) => pill("update-now", "icons/download.svg", tf("Update to {v}", &[("v", &v)]), Press::Primary, false, &theme).w(UPDATE_W).on_click(cx.listener(|this, _, window, cx| {
                 swallow_click(window, cx);
@@ -662,69 +688,8 @@ impl Settings {
         }
         .into_any_element();
         let auto = self.switch("update-auto", auto_on, Rc::new(|this, on, cx| this.controller.update(cx, |c, cx| c.set_check_updates(on, cx))), cx);
-        vec![group(
-            None,
-            vec![
-                line(t("Version"), Some(version_note), button, &theme),
-                line(t("Check automatically"), Some(div().child(t("Once a day. Nothing is installed without you.")).into_any_element()), auto, &theme),
-            ],
-            &theme,
-        )]
-    }
-
-    /// About: the title card, set as a film's first one is, and who makes
-    /// tabflip: Alkaline Software.
-    fn about(&mut self, cx: &mut Context<Self>) -> Vec<AnyElement> {
-        let theme = cx.theme().clone();
-        let current = update::current_version();
-        let hover = theme.primary;
-        let link = |id: &'static str, name: &'static str, url: &'static str| {
-            div()
-                .id(id)
-                .cursor_pointer()
-                .text_color(theme.foreground)
-                .text_decoration_1()
-                .text_decoration_color(theme.foreground.opacity(0.35))
-                .hover(move |s| s.text_color(hover).text_decoration_color(hover))
-                .on_click(move |_, _, _| sys::open_url(url))
-                .child(name)
-        };
-        let prose = || h_flex().flex_wrap().justify_center().text_size(px(13.5)).line_height(px(22.)).text_color(theme.muted_foreground);
-        let go = |id: &'static str, icon: &'static str, label: &'static str, url: String| small_pill(id, icon, label, Press::Quiet, false, &theme).on_click(move |_, _, _| sys::open_url(&url));
-        let site = update::repo_page();
-        let open_site = {
-            let site = site.clone();
-            move |_: &ClickEvent, _: &mut Window, _: &mut App| sys::open_url(&site)
-        };
-        vec![
-            // Who presents, the app, its version.
-            v_flex()
-                .w_full()
-                .items_center()
-                .pt(px(30.))
-                .pb(px(28.))
-                .rounded(CARD_R)
-                .border_1()
-                .border_color(theme.border)
-                .bg(card_ground(&theme))
-                .child(weave(t("{studio} presents"), vec![("studio", link("about-studio", "Alkaline Software", "https://github.com/alkaline-software").into_any_element())], prose().text_size(px(12.5))))
-                .child(div().id("about-icon").mt(px(18.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site.clone()).child(img("icon/app-large.png").size(px(88.)).flex_shrink_0()))
-                .child(div().id("about-name").mt(px(6.)).cursor_pointer().hover(|s| s.opacity(0.82)).on_click(open_site).text_size(px(42.)).line_height(px(48.)).text_color(theme.primary).font_family(wordmark_face(cx)).child("tabflip"))
-                .child(div().mt(px(4.)).text_size(px(12.5)).text_color(theme.muted_foreground).child(tf("Switch between windows, not apps · Version {v}", &[("v", &current)])))
-                .into_any_element(),
-            v_flex()
-                .w_full()
-                .items_center()
-                .gap(px(16.))
-                .pt(px(8.))
-                .child(weave(
-                    t("A studio by {jp} and {pingfan}."),
-                    vec![("jp", link("about-jp", "Dr. John Paul Helveston", "https://www.jhelvy.com").into_any_element()), ("pingfan", link("about-pingfan", "Dr. Pingfan Hu", "https://pingfan.org").into_any_element())],
-                    prose(),
-                ))
-                .child(h_flex().gap(px(8.)).child(go("about-source", "icons/github.svg", "GitHub", site.clone())).child(go("about-notes", "icons/file-text.svg", t("Release Notes"), update::release_page(current))))
-                .into_any_element(),
-        ]
+        let updates = div().w_full().pt(px(12.)).child(group(None, vec![line(t("Updates"), note, button, &theme), line(t("Check automatically"), None, auto, &theme)], &theme)).into_any_element();
+        vec![group(None, vec![title], &theme), pills, updates]
     }
 
     /// How something small stands at this draw, asked at every draw
@@ -1125,11 +1090,4 @@ fn weave(sentence: &str, mut things: Vec<(&str, AnyElement)>, row: Div) -> Div {
         row = row.child(rest.to_string());
     }
     row
-}
-
-/// The face the app's name is set in on About: a light, elegant sans with
-/// flared strokes, Optima, else Avenir Next, both the Mac's own.
-fn wordmark_face(cx: &App) -> SharedString {
-    let names = cx.text_system().all_font_names();
-    ["Optima", "Avenir Next"].into_iter().find(|f| names.iter().any(|n| n == f)).unwrap_or(".SystemUIFont").into()
 }

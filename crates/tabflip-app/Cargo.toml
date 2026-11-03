@@ -40,7 +40,7 @@ objc2-service-management = { version = "0.3", features = ["SMAppService"] }
 raw-window-handle = "0.6"
 
 # Installers: `cargo packager --release`. The Mac bundle is signed afterwards
-# by scripts/release-mac.sh, with the identity of whoever runs it (WORKFLOW.md).
+# by scripts/release-mac.sh, with the identity of whoever runs it (docs/release.md).
 [package.metadata.packager]
 productName = "tabflip"
 identifier = "com.alkalinesoftware.tabflip"

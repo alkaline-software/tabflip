@@ -39,13 +39,13 @@ pub fn app_menus() -> Vec<Menu> {
 }
 
 /// The menu bar item's menu: each section of Settings with the rail's
-/// icon, a line before Updates, and Quit under a line of its own.
+/// icon, a line before About, and Quit under a line of its own.
 pub fn menu_lines() -> Vec<sys::status_item::MenuLine> {
     let icon = |path: &str| match assets::Assets.load(path) {
         Ok(Some(std::borrow::Cow::Borrowed(bytes))) => bytes,
         _ => &[],
     };
-    let mut lines: Vec<sys::status_item::MenuLine> = settings::SECTIONS.iter().map(|&(key, title, path)| sys::status_item::MenuLine { key, title: i18n::t(title), icon: icon(path), keys: "", gap: key == "updates" }).collect();
+    let mut lines: Vec<sys::status_item::MenuLine> = settings::SECTIONS.iter().map(|&(key, title, path)| sys::status_item::MenuLine { key, title: i18n::t(title), icon: icon(path), keys: "", gap: key == "about" }).collect();
     lines.push(sys::status_item::MenuLine { key: "quit", title: i18n::t("Quit tabflip"), icon: icon("icons/logout.svg"), keys: "q", gap: true });
     lines
 }
@@ -87,6 +87,7 @@ fn main() {
         // others be.
         let ended_others = std::env::var_os("TABFLIP_HOME").is_none() && sys::end_other_tabflips();
         theme::install(cx);
+        ui::find_faces(cx);
         let controller = cx.new(|_| controller::Controller::new());
         cx.set_global(controller::Global_(controller.clone()));
         if ended_others {

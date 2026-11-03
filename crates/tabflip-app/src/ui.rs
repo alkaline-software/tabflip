@@ -1,7 +1,8 @@
 //! The Settings window's small parts, the same as Alkaline Software's
 //! other apps draw them: the button (a pill with an icon), a page coming
-//! in, a key on its cap, the shadow under a floating card, and the click
-//! that is swallowed without leaving a text drag open.
+//! in, a key on its cap, the shadow under a floating card, the app's name
+//! in its own face, and the click that is swallowed without leaving a
+//! text drag open.
 
 use std::time::Duration;
 
@@ -14,6 +15,34 @@ pub const TURN: Duration = Duration::from_millis(200);
 /// A list over the window comes in over this long, and goes over the next.
 pub const MENU_IN: Duration = Duration::from_millis(140);
 pub const MENU_OUT: Duration = Duration::from_millis(110);
+
+/// The face the app's name is set in, found once at start (`find_faces`): listing every installed face takes over a tenth of a second, and asked as About drew it held each of its frames that long.
+struct Faces {
+    wordmark: SharedString,
+}
+
+impl Global for Faces {}
+
+/// The system's faces looked at once, at start: the name's is Optima, else Avenir Next, both the Mac's own and never carried.
+pub fn find_faces(cx: &mut App) {
+    let names = cx.text_system().all_font_names();
+    let wordmark = ["Optima", "Avenir Next"].into_iter().find(|f| names.iter().any(|n| n == f)).unwrap_or(".SystemUIFont").into();
+    cx.set_global(Faces { wordmark });
+}
+
+/// The app's name in its own face at `size`. Optima has only regular and bold, so the regular is drawn twice half a pixel apart for a weight between.
+pub fn wordmark(name: &'static str, size: f32, color: Hsla, cx: &App) -> Div {
+    let family = cx.try_global::<Faces>().map_or(SharedString::from(".SystemUIFont"), |f| f.wordmark.clone());
+    div()
+        .relative()
+        .font_family(family)
+        .text_size(px(size))
+        .line_height(px(size * 1.15))
+        .text_color(color)
+        // The first copy takes the room; the second stands over it.
+        .child(div().child(name))
+        .child(div().absolute().left(px(0.5)).top_0().child(name))
+}
 
 /// Swallow a click without leaving the toolkit's text selection mid-drag.
 /// gpui-component's selection layer begins a drag on every left mouse-down
@@ -32,7 +61,7 @@ pub fn page_in(id: impl Into<SharedString>, el: Div) -> AnyElement {
 
 /// The shadow under a floating card (a list that drops down): a wide soft
 /// drop in the ink's own hue and a hairline of contact under it, so the
-/// card lifts off the page rather than sitting in a grey halo.
+/// card lifts off the page rather than sitting in a gray halo.
 pub fn float_shadow(theme: &gpui_component::Theme) -> Vec<BoxShadow> {
     let dark = theme.mode.is_dark();
     let ink = if dark { gpui::black() } else { theme.foreground };
@@ -61,7 +90,7 @@ pub fn pill(id: impl Into<ElementId>, icon: &'static str, label: impl Into<Share
     };
     let (ground, edge, hover) = match kind {
         Press::Primary => (Some(theme.primary), theme.primary, theme.primary.opacity(0.85)),
-        // An edge of the ink, not the border's colour: on a card the
+        // An edge of the ink, not the border's color: on a card the
         // border is the card's own shade and the pill had no outline.
         Press::Quiet => (None, theme.foreground.opacity(0.16), theme.foreground.opacity(0.06)),
     };

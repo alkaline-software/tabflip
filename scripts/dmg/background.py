@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The disk image's Finder background: "Drag tabflip to Applications" on
-the app's page colour, with a lavender arrow between where the app icon
+the app's page color, with a sapphire arrow between where the app icon
 and the Applications link sit. 1320x840 pixels at 144 dpi, which Finder
 shows as the 660x420 window release-mac.sh opens. Needs Pillow and LXGW
 WenKai Medium (the face Alkaline Software's disk images use); the PNG
@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 W, H = 1320, 840
 PAGE = (251, 251, 250)         # the window's page, #FBFBFA
 INK = (31, 30, 29)             # the ink, #1F1E1D
-LAVENDER = (112, 87, 168)      # the accent's light shade, #7057A8
+ACCENT = (42, 105, 180)        # the accent's light shade, #2A69B4
 FONT = Path.home() / "Library/Fonts/LXGWWenKai-Medium.ttf"
 OUT = Path(__file__).with_name("background.png")
 
@@ -35,8 +35,8 @@ draw.text(((W - tw) // 2 - box[0], int(H * 0.28) - th // 2 - box[1]), text, font
 # The arrow runs between the icon positions the layout script sets
 # (165 and 495 logical points, doubled), clear of both 128pt icons.
 y, x1, x2, head = int(H * 0.63), 480, 840, 28
-draw.line([(x1, y), (x2 - head, y)], fill=LAVENDER, width=5)
-draw.polygon([(x2, y), (x2 - head, y - head // 2), (x2 - head, y + head // 2)], fill=LAVENDER)
+draw.line([(x1, y), (x2 - head, y)], fill=ACCENT, width=5)
+draw.polygon([(x2, y), (x2 - head, y - head // 2), (x2 - head, y + head // 2)], fill=ACCENT)
 
 img.save(OUT, "PNG", dpi=(144, 144))
 print(f"wrote {OUT} {W}x{H}")

@@ -4,7 +4,7 @@ name: release
 # push --tags`), attached to a draft GitHub Release under stable names with
 # the tag's section of CHANGELOG.md as its notes. These are ad-hoc signed;
 # the Developer ID holder puts notarized ones over them and publishes the
-# draft (scripts/release-publish.sh, WORKFLOW.md).
+# draft (scripts/release-publish.sh, docs/release.md).
 on:
   push:
     tags: ["v*"]

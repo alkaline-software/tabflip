@@ -12,7 +12,6 @@ use std::cell::Cell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use gpui::prelude::FluentBuilder as _;
 use gpui::*;
 
 use crate::controller::{self, Controller};
@@ -138,16 +137,11 @@ struct Colors {
     pick_text: Hsla,
 }
 
-/// The panel's colours in the system's appearance, with the highlight
+/// The panel's colors in the system's appearance, with the highlight
 /// Settings chose (`look::highlight`), and text on it that can be read.
 fn colors(window: &Window, highlight: &str) -> Colors {
     use tabflip_core::look;
-    // `TABFLIP_APPEARANCE=dark|light`, for a probe, in place of the system's.
-    let dark = match std::env::var("TABFLIP_APPEARANCE").as_deref() {
-        Ok("dark") => true,
-        Ok("light") => false,
-        _ => matches!(window.appearance(), WindowAppearance::Dark | WindowAppearance::VibrantDark),
-    };
+    let dark = probe().appearance.unwrap_or_else(|| matches!(window.appearance(), WindowAppearance::Dark | WindowAppearance::VibrantDark));
     let pick = look::highlight(highlight, dark);
     let pick_text = if look::dark_text_on(pick) { rgb(0x1d1d1f).into() } else { gpui::white() };
     if dark {
@@ -184,8 +178,8 @@ impl Render for Panel {
         // The highlight, one plate under the rows, sliding from the row it
         // was on to the one chosen, on gpui's clock, once a slide. The rows
         // are drawn inside the same animation, so each row's words take the
-        // plate's colour exactly as far as the plate covers it: with the
-        // colour flipping at the key, the chosen row's words went white on
+        // plate's color exactly as far as the plate covers it: with the
+        // color flipping at the key, the chosen row's words went white on
         // the light ground before the plate arrived, and vanished.
         let (from, to, at) = (self.slide_from, selected.unwrap_or(0) as f32 * row_h, self.at.clone());
         let shown = self.shown;
@@ -198,7 +192,7 @@ impl Render for Panel {
             .with_animation(ElementId::Name(format!("highlight-{}", self.slide).into()), Animation::new(SLIDE).with_easing(slide_ease), move |d, t| {
                 let y = from + (to - from) * t;
                 at.set(y);
-                if std::env::var_os("TABFLIP_FRAME_LOG").is_some() {
+                if probe().frame_log {
                     crate::sys::log(format_args!("frame slide t={t:.3} y={y:.1}"));
                 }
                 let plate = selected.map(|_| div().absolute().left_0().right_0().top(px(y)).h(px(row_h)).rounded(px(7. * k)).bg(colors.pick));
@@ -245,6 +239,26 @@ impl Render for Panel {
     }
 }
 
+/// What a probe asked of the list, read once: the environment is read under a lock, and the list asks at every frame.
+struct Probe {
+    /// `TABFLIP_APPEARANCE=dark|light`, in place of the system's.
+    appearance: Option<bool>,
+    /// `TABFLIP_FRAME_LOG`: each frame of the highlight's slide written to the dev log.
+    frame_log: bool,
+}
+
+fn probe() -> &'static Probe {
+    static PROBE: std::sync::OnceLock<Probe> = std::sync::OnceLock::new();
+    PROBE.get_or_init(|| Probe {
+        appearance: match std::env::var("TABFLIP_APPEARANCE").as_deref() {
+            Ok("dark") => Some(true),
+            Ok("light") => Some(false),
+            _ => None,
+        },
+        frame_log: std::env::var_os("TABFLIP_FRAME_LOG").is_some(),
+    })
+}
+
 /// The highlight's slide eases out as a cubic: the quint every other
 /// motion uses did most of a 150 ms slide in its first 40, and the plate
 /// read as a jump with one smeared frame.
@@ -252,7 +266,7 @@ fn slide_ease(t: f32) -> f32 {
     1. - (1. - t).powi(3)
 }
 
-/// `a` toward `b` by `t`: the rows' inks are greys and whites, whose
+/// `a` toward `b` by `t`: the rows' inks are grays and whites, whose
 /// lightness and alpha mix straight.
 fn mix(a: Hsla, b: Hsla, t: f32) -> Hsla {
     Hsla { h: a.h + (b.h - a.h) * t, s: a.s + (b.s - a.s) * t, l: a.l + (b.l - a.l) * t, a: a.a + (b.a - a.a) * t }

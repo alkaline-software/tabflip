@@ -1,16 +1,16 @@
 //! The Settings window's look: the palette Alkaline Software's apps share
 //! (`themes/tabflip.json`, one config per appearance, near white with a
 //! trace of warmth in the light appearance), with tabflip's accent,
-//! lavender, painted into both configs before the toolkit gets them, so
+//! sapphire, painted into both configs before the toolkit gets them, so
 //! `Theme::change` keeps it on every appearance switch.
 //!
-//! The switcher's list is drawn in its own colours (`panel.rs`), not these.
+//! The switcher's list is drawn in its own colors (`panel.rs`), not these.
 
 use gpui::App;
 use gpui_component::theme::{Theme, ThemeConfig, ThemeSet};
 
 /// The accent in each appearance (base, hover, active) and the link
-/// colour: the hover shade in the light palette and the base in the dark
+/// color: the hover shade in the light palette and the base in the dark
 /// one, so text in it stays readable.
 pub struct Accent {
     light: [&'static str; 3],
@@ -18,12 +18,8 @@ pub struct Accent {
     link: [&'static str; 2],
 }
 
-/// Lavender: a hue of the family's wheel at the family's weight, OKLCH
-/// lightness 0.52 and chroma 0.125 in the light appearance, 0.74 and
-/// 0.105 in the dark, at hue 296, halfway between periwinkle and orchid.
-/// Hover is 0.02 darker in the light appearance and 0.04 lighter in the
-/// dark; active is 0.06 and 0.04 darker (`docs/design.md`).
-pub const LAVENDER: Accent = Accent { light: ["#7057A8", "#6B51A2", "#5F4695"], dark: ["#B09DE6", "#BDAAF3", "#A491D8"], link: ["#6B51A2", "#B09DE6"] };
+/// Sapphire, the list's first color made the window's accent: OKLCH lightness 0.52 and chroma 0.135 in the light appearance, 0.74 and 0.105 in the dark, at hue 255. Hover is 0.02 darker in the light appearance and 0.04 lighter in the dark; active is 0.06 and 0.04 darker (`docs/design.md`, The accent).
+pub const SAPPHIRE: Accent = Accent { light: ["#2A69B4", "#2463AE", "#1657A1"], dark: ["#7DAEEC", "#89BAFA", "#71A1DF"], link: ["#2463AE", "#7DAEEC"] };
 
 /// The inks the palette names by name ("@l-blue", "@d-rose"), one set an
 /// appearance, for what in the toolkit draws code.
@@ -35,17 +31,17 @@ struct Inks {
     teal: u32,
     green: u32,
     red: u32,
-    grey: u32,
+    gray: u32,
 }
 
-const INKS_LIGHT: Inks = Inks { blue: 0x286983, violet: 0x7A6398, gold: 0x8A6A1E, rose: 0xA3566F, teal: 0x357783, green: 0x4C7B58, red: 0xB0505F, grey: 0x85818F };
-const INKS_DARK: Inks = Inks { blue: 0x7FB4D0, violet: 0xC4A7E7, gold: 0xE9C083, rose: 0xE8B0AE, teal: 0x9CCFD8, green: 0xA3CCA4, red: 0xEB8FA6, grey: 0x8F8BA0 };
+const INKS_LIGHT: Inks = Inks { blue: 0x286983, violet: 0x7A6398, gold: 0x8A6A1E, rose: 0xA3566F, teal: 0x357783, green: 0x4C7B58, red: 0xB0505F, gray: 0x85818F };
+const INKS_DARK: Inks = Inks { blue: 0x7FB4D0, violet: 0xC4A7E7, gold: 0xE9C083, rose: 0xE8B0AE, teal: 0x9CCFD8, green: 0xA3CCA4, red: 0xEB8FA6, gray: 0x8F8BA0 };
 
-/// The theme file with each ink's name replaced by its colour.
+/// The theme file with each ink's name replaced by its color.
 fn inked(json: &str) -> String {
     let mut out = json.to_string();
     for (p, inks) in [("l", &INKS_LIGHT), ("d", &INKS_DARK)] {
-        for (name, c) in [("blue", inks.blue), ("violet", inks.violet), ("gold", inks.gold), ("rose", inks.rose), ("teal", inks.teal), ("green", inks.green), ("red", inks.red), ("grey", inks.grey)] {
+        for (name, c) in [("blue", inks.blue), ("violet", inks.violet), ("gold", inks.gold), ("rose", inks.rose), ("teal", inks.teal), ("green", inks.green), ("red", inks.red), ("gray", inks.gray)] {
             out = out.replace(&format!("\"@{p}-{name}\""), &format!("\"#{c:06X}\""));
         }
     }
@@ -85,7 +81,7 @@ pub fn install(cx: &mut App) {
     };
     let theme = Theme::global_mut(cx);
     for mut cfg in set.themes {
-        paint(&mut cfg, &LAVENDER);
+        paint(&mut cfg, &SAPPHIRE);
         let cfg = std::rc::Rc::new(cfg);
         if cfg.mode.is_dark() {
             theme.dark_theme = cfg;

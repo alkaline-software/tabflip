@@ -34,6 +34,7 @@ pub struct Controller {
     /// taken, and whether one is being taken outside a round.
     known: Vec<Win>,
     refreshing: bool,
+    refresh_again: bool,
     recent: Recent,
     icons: HashMap<i32, Option<Arc<Image>>>,
     panel: Option<WindowHandle<Panel>>,
@@ -81,6 +82,13 @@ enum UpdateEvent {
     Failed(String),
 }
 
+/// What one look at the windows found (`Controller::look`).
+struct Look {
+    windows: Vec<Win>,
+    stack: Vec<u32>,
+    focused: Option<u32>,
+}
+
 pub struct Global_(pub Entity<Controller>);
 
 impl Global for Global_ {}
@@ -100,6 +108,7 @@ impl Controller {
             rows: Vec::new(),
             known: Vec::new(),
             refreshing: false,
+            refresh_again: false,
             recent: Recent::default(),
             icons: HashMap::new(),
             panel: None,
@@ -211,15 +220,8 @@ impl Controller {
         }
     }
 
-    /// A round begins: the window in front is remembered as the latest
-    /// used, and the delay before the list shows starts. The windows last
-    /// looked at are listed at once, those still on screen or put away,
-    /// and a fresh look is taken off the main thread to replace them: an
-    /// app slow to answer never keeps the list from showing.
+    /// A round begins: the delay before the list shows starts. The windows last looked at are listed at once, those still on screen or put away, and a fresh look is taken off the main thread to replace them: an app slow to answer never keeps the list from showing. The window in front is remembered as the latest used when the look comes back; until then it is ranked by the stack, where it is first.
     fn begin(&mut self, round: u64, cx: &mut Context<Self>) {
-        if let Some(id) = sys::windows::focused() {
-            self.recent.touch(id);
-        }
         if !self.known.is_empty() {
             let stack = sys::windows::on_screen();
             let known = self.known.iter().filter(|w| w.minimized || w.app_hidden || w.id.is_some_and(|n| stack.contains(&n))).cloned().collect();
@@ -227,10 +229,10 @@ impl Controller {
         }
         let listing = Self::look(cx);
         cx.spawn(async move |this, cx| {
-            let (windows, stack) = listing.await;
+            let look = listing.await;
             let _ = this.update(cx, |c, cx| {
-                c.known = windows.clone();
-                c.listed(round, windows, &stack, cx);
+                c.looked(&look);
+                c.listed(round, look.windows, &look.stack, cx);
             });
         })
         .detach();
@@ -245,30 +247,51 @@ impl Controller {
         .detach();
     }
 
-    /// The windows and the on-screen stack, read off the main thread.
-    fn look(cx: &mut Context<Self>) -> Task<(Vec<Win>, Vec<u32>)> {
+    /// The windows, the on-screen stack and the window in front, read off the main thread.
+    fn look(cx: &mut Context<Self>) -> Task<Look> {
         let apps = sys::windows::apps();
         cx.background_spawn(async move {
             let started = std::time::Instant::now();
             let stack = sys::windows::on_screen();
             let windows = sys::windows::list(&apps, &stack);
+            let focused = sys::windows::focused();
             sys::log(format_args!("looked: {} apps, {} on screen, {} windows in {:?}", apps.len(), stack.len(), windows.len(), started.elapsed()));
-            (windows, stack)
+            Look { windows, stack, focused }
         })
     }
 
-    /// A fresh look outside a round, for the next one to show at once.
+    /// What a look found, kept for the next round: the windows, the one in front as the latest used, and the icons of the apps with windows, each drawn once when its app is first seen and dropped when it has none.
+    fn looked(&mut self, look: &Look) {
+        if let Some(id) = look.focused {
+            self.recent.touch(id);
+        }
+        self.known = look.windows.clone();
+        let running: std::collections::HashSet<i32> = look.windows.iter().map(|w| w.pid).collect();
+        self.icons.retain(|pid, _| running.contains(pid));
+        for pid in running {
+            self.icon(pid);
+        }
+    }
+
+    /// A fresh look outside a round, for the next one to show at once. One asked for while another is under way is taken when that one is back, so the window in front at the last change is the one noted.
     fn refresh(&mut self, cx: &mut Context<Self>) {
-        if self.refreshing || !self.listening {
+        if !self.listening {
+            return;
+        }
+        if self.refreshing {
+            self.refresh_again = true;
             return;
         }
         self.refreshing = true;
         let listing = Self::look(cx);
         cx.spawn(async move |this, cx| {
-            let (windows, _) = listing.await;
-            let _ = this.update(cx, |c, _| {
+            let look = listing.await;
+            let _ = this.update(cx, |c, cx| {
                 c.refreshing = false;
-                c.known = windows;
+                c.looked(&look);
+                if std::mem::take(&mut c.refresh_again) {
+                    c.refresh(cx);
+                }
             });
         })
         .detach();
@@ -327,12 +350,8 @@ impl Controller {
         }
     }
 
-    /// Note which window is in front, each time another app comes
-    /// forward, and look at the windows again for the next round.
+    /// Each time another app comes forward, the windows are looked at again for the next round, which notes the one in front.
     pub fn app_activated(&mut self, cx: &mut Context<Self>) {
-        if let Some(id) = sys::windows::focused() {
-            self.recent.touch(id);
-        }
         self.refresh(cx);
     }
 
@@ -429,7 +448,7 @@ impl Controller {
         cx.notify();
     }
 
-    /// A preset's name or a hex colour; false, and nothing kept, for
+    /// A preset's name or a hex color; false, and nothing kept, for
     /// anything else.
     pub fn set_highlight(&mut self, text: &str, cx: &mut Context<Self>) -> bool {
         if !self.config.set_highlight(text) {

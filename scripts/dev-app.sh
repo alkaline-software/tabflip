@@ -64,6 +64,12 @@ else
   echo "dev-app: scripts/make-dev-cert.sh makes one that lasts." >&2
 fi
 
+# The system keeps an app's icon by its bundle and reads it again only
+# when the bundle looks changed: the bundle is touched and registered
+# afresh, or the Dock and Finder go on showing the icon of the first build.
+touch "$app"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$app" >/dev/null 2>&1 || true
+
 # Any running copy quits, the dev one and an installed one, since two
 # would both take the shortcut (SIGTERM puts the system's ⌘Tab back), and
 # this one opens. Its log is ~/Library/Logs/tabflip-dev.log.

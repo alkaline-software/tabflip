@@ -20,7 +20,7 @@ pub struct Config {
     pub appear_delay_ms: u64,
     /// The list's size: "small", "medium" or "large".
     pub size: String,
-    /// The selected row's colour: a preset's name ("blue") or "#rrggbb".
+    /// The selected row's color: a preset's name ("blue") or "#rrggbb".
     pub highlight: String,
     /// Whether the item stands in the menu bar. Without it, Settings are
     /// reached by opening tabflip again from Finder or Spotlight.
@@ -79,7 +79,7 @@ impl Config {
     }
 
     /// The highlight as the config gives it, or the default when it is
-    /// neither a preset nor a colour.
+    /// neither a preset nor a color.
     pub fn highlight(&self) -> &str {
         if look::is_highlight(&self.highlight) {
             &self.highlight
@@ -88,7 +88,7 @@ impl Config {
         }
     }
 
-    /// A preset's name, or a colour, written as `#rrggbb`. Anything else
+    /// A preset's name, or a color, written as `#rrggbb`. Anything else
     /// is refused.
     pub fn set_highlight(&mut self, text: &str) -> bool {
         if let Some(p) = look::preset(text) {

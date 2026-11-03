@@ -170,15 +170,6 @@
     "de": "Einstellungen öffnen",
     "es": "Abrir ajustes"
   },
-  "Version": {
-    "zh-Hans": "版本",
-    "zh-Hant": "版本",
-    "ja": "バージョン",
-    "ko": "버전",
-    "fr": "Version",
-    "de": "Version",
-    "es": "Versión"
-  },
   "Check for updates": {
     "zh-Hans": "检查更新",
     "zh-Hant": "檢查更新",
@@ -223,15 +214,6 @@
     "fr": "{studio} présente",
     "de": "{studio} präsentiert",
     "es": "{studio} presenta"
-  },
-  "A studio by {jp} and {pingfan}.": {
-    "zh-Hans": "由 {jp} 和 {pingfan} 创立的工作室。",
-    "zh-Hant": "由 {jp} 和 {pingfan} 創立的工作室。",
-    "ja": "{jp} と {pingfan} のスタジオ。",
-    "ko": "{jp}와 {pingfan}의 스튜디오.",
-    "fr": "Un studio de {jp} et {pingfan}.",
-    "de": "Ein Studio von {jp} und {pingfan}.",
-    "es": "Un estudio de {jp} y {pingfan}."
   },
   "Quit tabflip": {
     "zh-Hans": "退出 tabflip",
@@ -431,14 +413,14 @@
     "de": "Groß",
     "es": "Grande"
   },
-  "Highlight": {
-    "zh-Hans": "高亮",
-    "zh-Hant": "高亮",
-    "ja": "ハイライト",
-    "ko": "강조",
-    "fr": "Surbrillance",
-    "de": "Hervorhebung",
-    "es": "Resaltado"
+  "Accent": {
+    "zh-Hans": "强调色",
+    "zh-Hant": "強調色",
+    "ja": "アクセントカラー",
+    "ko": "강조 색상",
+    "fr": "Couleur d’accentuation",
+    "de": "Akzentfarbe",
+    "es": "Color de acento"
   },
   "Blue": {
     "zh-Hans": "蓝色",
@@ -466,15 +448,6 @@
     "fr": "Rose",
     "de": "Rosa",
     "es": "Rosa"
-  },
-  "Red": {
-    "zh-Hans": "红色",
-    "zh-Hant": "紅色",
-    "ja": "レッド",
-    "ko": "빨간색",
-    "fr": "Rouge",
-    "de": "Rot",
-    "es": "Rojo"
   },
   "Orange": {
     "zh-Hans": "橙色",
@@ -512,7 +485,7 @@
     "de": "Graphit",
     "es": "Grafito"
   },
-  "Your own colour": {
+  "Your own color": {
     "zh-Hans": "自定义颜色",
     "zh-Hant": "自訂顏色",
     "ja": "好きな色",
@@ -521,7 +494,7 @@
     "de": "Eigene Farbe",
     "es": "Tu propio color"
   },
-  "Any colour, as hex.": {
+  "Any color, as hex.": {
     "zh-Hans": "任意颜色，十六进制。",
     "zh-Hant": "任意顏色，十六進位。",
     "ja": "どんな色でも、16 進数で。",
@@ -530,7 +503,7 @@
     "de": "Jede Farbe, als Hex.",
     "es": "Cualquier color, en hexadecimal."
   },
-  "Not a colour: #rrggbb or #rgb.": {
+  "Not a color: #rrggbb or #rgb.": {
     "zh-Hans": "不是颜色：请用 #rrggbb 或 #rgb。",
     "zh-Hant": "不是顏色：請用 #rrggbb 或 #rgb。",
     "ja": "色ではありません。#rrggbb か #rgb で。",
@@ -583,24 +556,6 @@
     "fr": "Notes de version",
     "de": "Versionshinweise",
     "es": "Notas de la versión"
-  },
-  "Once a day. Nothing is installed without you.": {
-    "zh-Hans": "每天一次。不会自行安装任何内容。",
-    "zh-Hant": "每天一次。不會自行安裝任何內容。",
-    "ja": "1 日 1 回。勝手にインストールはしません。",
-    "ko": "하루 한 번. 아무것도 저절로 설치되지 않습니다.",
-    "fr": "Une fois par jour. Rien n’est installé sans vous.",
-    "de": "Einmal am Tag. Nichts wird ohne Sie installiert.",
-    "es": "Una vez al día. Nada se instala sin ti."
-  },
-  "Switch between windows, not apps · Version {v}": {
-    "zh-Hans": "在窗口之间切换，而不是应用 · 版本 {v}",
-    "zh-Hant": "在視窗之間切換，而不是 App · 版本 {v}",
-    "ja": "アプリではなく、ウインドウを切り替える · バージョン {v}",
-    "ko": "앱이 아니라 윈도우를 전환합니다 · 버전 {v}",
-    "fr": "Passer d’une fenêtre à l’autre, pas d’une app à l’autre · Version {v}",
-    "de": "Zwischen Fenstern wechseln, nicht zwischen Apps · Version {v}",
-    "es": "Cambia entre ventanas, no entre apps · Versión {v}"
   },
   "Update to {v}": {
     "zh-Hans": "更新到 {v}",
@@ -655,5 +610,14 @@
     "fr": "Installation… tabflip redémarre tout seul.",
     "de": "Installiere … tabflip startet von selbst neu.",
     "es": "Instalando… tabflip se reiniciará solo."
+  },
+  "Version {v}": {
+    "zh-Hans": "版本 {v}",
+    "zh-Hant": "版本 {v}",
+    "ja": "バージョン {v}",
+    "ko": "버전 {v}",
+    "fr": "Version {v}",
+    "de": "Version {v}",
+    "es": "Versión {v}"
   }
 }

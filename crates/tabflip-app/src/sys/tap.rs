@@ -1,6 +1,6 @@
-//! The keyboard, seen in every app: an event tap on the main run loop.
+//! The keyboard, seen in every app: an event tap on a thread of its own.
 //!
-//! The tap only matches and forwards; anything slow happens in the app.
+//! Every key and click in the session waits for the tap to answer, so it runs on its own run loop, never the main one: there it waited for each frame the app drew, and the app's frames held up every keystroke on the Mac. The tap only matches and forwards; anything slow happens in the app.
 //! It keeps from the app in front the shortcut's key (and ` with the
 //! shortcut's modifiers, which goes back, as ⇧ does), and while the
 //! switcher is open every key, so Tab, the arrows and Esc move through the
@@ -39,8 +39,9 @@ extern "C" {
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
     fn CFMachPortCreateRunLoopSource(alloc: Ref, port: Ref, order: isize) -> Ref;
-    fn CFRunLoopGetMain() -> Ref;
+    fn CFRunLoopGetCurrent() -> Ref;
     fn CFRunLoopAddSource(rl: Ref, source: Ref, mode: Ref);
+    fn CFRunLoopRun();
     fn CFRelease(r: Ref);
     static kCFRunLoopCommonModes: Ref;
 }
@@ -152,8 +153,7 @@ extern "C" fn seen(_proxy: Ref, kind: u32, event: Ref, info: Ref) -> Ref {
     }
 }
 
-/// The tap, on the main run loop for the app's life, or None when the
-/// system refuses it: Accessibility is not granted.
+/// The tap, on a thread of its own for the app's life, or None when the system refuses it: Accessibility is not granted. The tap is made here, so the answer is known at once, and its port is served by the thread's run loop.
 pub fn start() -> Option<UnboundedReceiver<Key>> {
     if !PORT.load(Ordering::Relaxed).is_null() {
         return None;
@@ -167,11 +167,20 @@ pub fn start() -> Option<UnboundedReceiver<Key>> {
         return None;
     }
     PORT.store(port, Ordering::Relaxed);
-    unsafe {
+    // A CF object may be used from any thread; the pointer goes over as a number.
+    let port_at = port as usize;
+    let served = std::thread::Builder::new().name("key tap".into()).spawn(move || unsafe {
+        let port = port_at as Ref;
         let source = CFMachPortCreateRunLoopSource(std::ptr::null_mut(), port, 0);
-        CFRunLoopAddSource(CFRunLoopGetMain(), source, kCFRunLoopCommonModes);
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes);
         CFRelease(source);
         CGEventTapEnable(port, true);
+        CFRunLoopRun();
+    });
+    if served.is_err() {
+        unsafe { CGEventTapEnable(port, false) };
+        PORT.store(std::ptr::null_mut(), Ordering::Relaxed);
+        return None;
     }
     Some(rx)
 }
