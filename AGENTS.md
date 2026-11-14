@@ -66,7 +66,7 @@ crates/tabflip-app/src/
   theme.rs        the Settings palette (themes/tabflip.json) with the sapphire painted in
   assets.rs       our icons (assets/icons, Tabler) over gpui-component's
   sys/            every macOS call: ax, windows, focus, tap, private (SkyLight), status_item, and placement, languages, login and the Dock in mod.rs
-scripts/          dev-app.sh, make-dev-cert.sh, make-icon.sh and icon/, dmg/, release-*.sh
+scripts/          dev-app.sh, make-dev-cert.sh, make-icon.sh and icon/, make-readme-gif.sh and readme/, dmg/, release-*.sh
 vendor/           gpui-component and block, each with an UPSTREAM.md
 ```
 

@@ -1,3 +1,5 @@
+<p align="center"><img src=".github/readme.gif" alt="A screen of four windows, two of them Chrome's: ⌘ held and Tab pressed shows a list of every window, Tab and ⇧Tab move through it, and letting go brings that window in front; a quick ⌘Tab goes to the last window with no list, and Esc changes nothing, each named at the right with its keys." width="100%"></p>
+
 # Tabflip
 
 **Switch between windows, not apps.**
