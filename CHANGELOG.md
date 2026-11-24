@@ -59,7 +59,7 @@ New settings in `config.json`: `"menu_bar_swap"` (default `false`) and `"languag
 
 For developers:
 
-- `docs/design.md` is tabflip's design standard, written from the studio's constitution: the palette, the type, the icons, the app icon, the list, the window, the menu bar, motion, languages, probing.
+- `docs/design.md` is tabflip's design standard, written from the studio's standards: the palette, the type, the icons, the app icon, the list, the window, the menu bar, motion, languages, probing.
 - `scripts/icon/icon.html` draws the icon on a canvas with proofs of every size and candidates (`VARIANT`); `scripts/make-icon.sh` renders every size on its own pixels through WebKit. `draw.swift` is gone.
 - `i18n.rs` and `locales/words.json`: every word through `t`/`tf`; `cargo test -p tabflip-app` fails on a phrase missing anywhere.
 - Probes: `TABFLIP_LANG`, `TABFLIP_APPEARANCE`, and `TABFLIP_GO` steps (`dark`, `pick:language`, `untrusted`, `record`, `newer`, …) before a `TABFLIP_SHOT_SETTINGS` picture.
